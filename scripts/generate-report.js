@@ -139,6 +139,7 @@ async function collectSearchData() {
       instructions: SEARCH_SYSTEM,
       input: `${TOPIC} 관련 최신 데이터를 웹 검색으로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요. 특정 매체 하나에 몰리지 않도록 서로 다른 도메인 8곳 이상에서 수집하고, 국내 이슈는 정부·공공기관 발표를 최소 2건, HR 기술 관련은 학술 논문·연구기관 자료를 최소 1~2건 반드시 포함해주세요.`,
       tools: [{ type: WEB_SEARCH_TOOL_TYPE }],
+      max_output_tokens: 6000, // 검색 호출 자체는 별도 과금, 이건 마지막 요약 텍스트의 상한
     }), "검색"
   );
 
@@ -307,6 +308,7 @@ async function generateJSON(system, label) {
       input: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchDataGlobal}`,
       // "json_object" 모드: 순수 JSON 문자열만 받도록 강제 (프롬프트에도 "JSON만 출력"을 명시)
       text: { format: { type: "json_object" } },
+      max_output_tokens: 4000,
     }).then((r) => (r.output_text || "").trim()),
     label
   );
