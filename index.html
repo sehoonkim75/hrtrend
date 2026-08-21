@@ -159,6 +159,35 @@ a{color:inherit;}
   .stats{grid-template-columns:repeat(2,1fr);}
   .bar-lbl{min-width:100px;max-width:120px;font-size:12.5px;}
   .pillar-head{align-items:flex-start;}
+  .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
+  .pdf-btn span{display:none;}
+}
+
+/* ── PDF 저장 버튼 ── */
+.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(20,24,31,.25);}
+.pdf-btn:hover{background:var(--issue);}
+.pdf-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
+
+/* ── 인쇄 / PDF 저장 스타일 ── */
+@media print{
+  :root{
+    --paper:#FFFFFF; --paper-raised:#FFFFFF; --ink:#14181F; --muted:#5B6169; --divider:#CBCFCA;
+    --issue:#3B4C9E; --issue-tint:#E1E5F6; --issue-tint-strong:#CBD3F0;
+    --tech:#0E7C6B; --tech-tint:#D7F0E9; --tech-tint-strong:#BEE6D9;
+    --work:#B5651D; --work-tint:#F6E4CC; --work-tint-strong:#EFD3AA;
+    --hero-bg:#14181F; --hero-fg:#F6F7F5; --chip-bg:rgba(20,24,31,.06);
+  }
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:14mm;}
+  body{font-size:12.5px;}
+  .no-print,.pdf-btn,.pillar-nav{display:none !important;}
+  .wrap{max-width:none;padding:0;}
+  .hero,.editor{border-radius:0;}
+  .pillar{margin-bottom:34px;page-break-inside:avoid;}
+  .card,.chart,.deepdive{page-break-inside:avoid;}
+  .deepdive .dd-chevron{display:none;}
+  .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);}
+  a{text-decoration:none;}
 }
 </style></head><body>
 <div class="wrap">
@@ -169,8 +198,8 @@ a{color:inherit;}
 
   <div class="hero">
     <div class="hero-eyebrow">이번 주 핵심 메시지</div>
-    <h1>AI가 채용·평가·보상의 기준을 다시 쓴다</h1>
-    <p>"많이 뽑는" 채용에서 "맞게 뽑고 증명하는" 채용으로 — 이번 주 국내외 HR 이슈, 기술 변화, 일하는 방식의 변화를 3개 축으로 정리했다.</p>
+    <h1>AI, 채용·평가의 표준이자 리스크로 동시에 떠오르다</h1>
+    <p>최근 1~2주간 국내외 HR 이슈를 채용·평가·보상 / HR 기술 / 일하는 방식 3개 축으로 정리했다. 기술 도입의 성과만큼 편향·반발·감원 명분화에 대한 우려도 함께 짚었다.</p>
   </div>
 
   <div class="stats">
@@ -265,6 +294,10 @@ a{color:inherit;}
     <article class="card">
       <div class="card-head"><span class="card-tag card-tag-tech">AI 에이전트</span><h4>HR 조직, AI 에이전트를 팀원으로 편입</h4></div>
       <div class="card-body"><p class="claim">국내 500대 기업의 86.7%가 이미 인사 업무에 AI를 활용하고 있다. <a class="tag tag-tech" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a></p><p class="claim">HR 조직 리더의 52%가 2026년에 AI 에이전트를 팀에 추가할 계획이라고 밝혔다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-tech">리스크 · 반발</span><h4>도입 속도만큼 편향·반발 우려도 커진다</h4></div>
+      <div class="card-body"><p class="claim">AI 채용 도구가 기존 편향을 답습하거나 새로운 편향을 만들어낼 수 있다는 우려가 구직자들 사이에서 커지고 있다. <a class="tag tag-tech" href="https://www.technologyreview.kr/%EC%B1%84%EC%9A%A9-%ED%86%B5%EA%B3%BC%ED%96%88%EB%82%98-%EC%8B%B6%EC%97%88%EB%8A%94%EB%8D%B0-%EA%B5%AC%EC%A7%81%EC%9E%90-%EC%9A%B8%EB%A6%AC%EB%8A%94-ai%EC%9D%98-%ED%8E%B8%ED%96%A5/" target="_blank" rel="noopener">MIT Technology Review Korea · 구직자 울리는 AI 편향 ↗</a></p><p class="claim">대량 채용에 쓰이는 AI 도구는 도입 속도만큼 오분류·오탈락 리스크도 크다는 지적이 나온다. <a class="tag tag-tech" href="https://www.kjob.news/news/513589" target="_blank" rel="noopener">전국인력신문 · AI 대량채용 도구의 리스크 ↗</a></p><p class="claim">국내 노동계에서도 AI 도입에 따른 감시·해고 우려로 반발이 이어지고 있다. <a class="tag tag-tech" href="https://v.daum.net/v/20260317170201632" target="_blank" rel="noopener">Daum 뉴스 · AI 도입 노조 반발 ↗</a></p><p class="claim">미국에서는 기업이 밝힌 감원 사유 중 AI 비중이 1월 7%에서 5월 40%까지 급등했지만, 일부 전문가는 이를 감원의 명분으로 활용하는 '레이오프 워싱'으로 봐야 한다고 지적한다. <a class="tag tag-tech" href="https://www.cnbc.com/2026/06/05/ai-is-now-the-leading-reason-companies-give-for-cutting-jobs-says-new-report-what-that-means-for-workers.html" target="_blank" rel="noopener">CNBC · AI, 감원 사유 1위로 ↗</a></p></div>
     </article></div>
     
     <div class="chart">
@@ -300,12 +333,12 @@ a{color:inherit;}
     </details>
     <div class="insight insight-tech">
       <span class="insight-label">시사점</span>
-      <p>HR테크 투자의 성패는 '얼마나 빨리 도입하느냐'가 아니라 '왜 그렇게 판단했는지 얼마나 투명하게 설명 가능한가'로 옮겨가고 있다 — 도입 속도와 설명 책임을 같은 예산 안에서 함께 설계해야 한다.</p>
+      <p>HR테크 투자의 성패는 '얼마나 빨리 도입하느냐'가 아니라 '왜 그렇게 판단했는지 얼마나 투명하게 설명 가능한가'로 옮겨가고 있다. 도입률 수치만큼 편향·오탈락·감원 명분화에 대한 우려도 같은 무게로 다뤄야 한다.</p>
     </div>
     <div class="chip-row"><span class="chip chip-tech">AI 채용솔루션</span><span class="chip chip-tech">AI 에이전트</span><span class="chip chip-tech">EU AI Act</span><span class="chip chip-tech">채용절차법 개정</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 기사</div>
-      <ul><li><a href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li><a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li><a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제</a></li></ul>
+      <ul><li><a href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li><a href="https://www.technologyreview.kr/%EC%B1%84%EC%9A%A9-%ED%86%B5%EA%B3%BC%ED%96%88%EB%82%98-%EC%8B%B6%EC%97%88%EB%8A%94%EB%8D%B0-%EA%B5%AC%EC%A7%81%EC%9E%90-%EC%9A%B8%EB%A6%AC%EB%8A%94-ai%EC%9D%98-%ED%8E%B8%ED%96%A5/" target="_blank" rel="noopener">MIT Technology Review Korea · 구직자 울리는 AI 편향</a></li><li><a href="https://www.kjob.news/news/513589" target="_blank" rel="noopener">전국인력신문 · AI 대량채용 도구의 리스크</a></li><li><a href="https://v.daum.net/v/20260317170201632" target="_blank" rel="noopener">Daum 뉴스 · AI 도입 노조 반발</a></li><li><a href="https://www.cnbc.com/2026/06/05/ai-is-now-the-leading-reason-companies-give-for-cutting-jobs-says-new-report-what-that-means-for-workers.html" target="_blank" rel="noopener">CNBC · AI, 감원 사유 1위로</a></li><li><a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li><a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제</a></li></ul>
     </div>
   </section>
   <section class="pillar" id="work">
@@ -328,7 +361,7 @@ a{color:inherit;}
     </article>
     <article class="card">
       <div class="card-head"><span class="card-tag card-tag-work">직무 재편</span><h4>감원과 재교육이 동시에 진행되는 이중 구조</h4></div>
-      <div class="card-body"><p class="claim">미국 빅테크는 2026년 들어 14만 명 이상을 감원하는 동시에 AI 인프라에 7,250억 달러를 투자하고 있다. <a class="tag tag-work" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원 ↗</a></p><p class="claim">아마존·오라클·메타·마이크로소프트 4개 기업에서만 약 5만 명이 일자리를 잃었다. <a class="tag tag-work" href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍 ↗</a></p><p class="claim">WEF는 2030년까지 핵심 스킬의 40%가 바뀌고, 근로자 100명 중 59명이 재교육이 필요할 것으로 전망한다. <a class="tag tag-work" href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics ↗</a></p></div>
+      <div class="card-body"><p class="claim">미국 빅테크는 2026년 들어 14만 명 이상을 감원하는 동시에 AI 인프라에 7,250억 달러를 투자하고 있다. <a class="tag tag-work" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원 ↗</a></p><p class="claim">아마존·오라클·메타·마이크로소프트 4개 기업에서만 약 5만 명이 일자리를 잃었다. <a class="tag tag-work" href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍 ↗</a></p><p class="claim">WEF는 2030년까지 핵심 스킬의 40%가 바뀌고, 근로자 100명 중 59명이 재교육이 필요할 것으로 전망한다. <a class="tag tag-work" href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics ↗</a></p><p class="claim">국내에서는 AI 도입에 따른 생산성 향상이 임금 인상으로 이어지지 않는다는 불만이 나오면서, 회사 AI 시스템을 고의로 방해하는 직장인 사례까지 보고된다. <a class="tag tag-work" href="https://www.fnnews.com/news/202608011131355775" target="_blank" rel="noopener">파이낸셜뉴스 · AI 도입과 임금 불만 ↗</a></p></div>
     </article></div>
     
     
@@ -340,18 +373,18 @@ a{color:inherit;}
     </details>
     <div class="insight insight-work">
       <span class="insight-label">시사점</span>
-      <p>일하는 시간과 장소의 자유는 늘어나지만, 그만큼 성과와 역량을 증명해야 하는 책임도 함께 커지고 있다 — '유연함'과 '재교육 투자'는 같은 정책의 양면으로 다뤄야 한다.</p>
+      <p>일하는 시간과 장소의 자유는 늘어나지만, 그만큼 성과와 역량을 증명해야 하는 책임도 함께 커지고 있다. 유연근무 확산과 재교육 투자, 그리고 그 이면의 임금·고용 불안을 같은 무게로 다뤄야 한다.</p>
     </div>
     <div class="chip-row"><span class="chip chip-work">주4.5일제</span><span class="chip chip-work">언테더드 HR</span><span class="chip chip-work">리스킬링</span><span class="chip chip-work">임금체계 개편</span><span class="chip chip-work">AI 전환형 구조조정</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 기사</div>
-      <ul><li><a href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입</a></li><li><a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">고용노동부 · 2026년 업무보고</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원</a></li><li><a href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍</a></li><li><a href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics</a></li><li><a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li></ul>
+      <ul><li><a href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입</a></li><li><a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">고용노동부 · 2026년 업무보고</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원</a></li><li><a href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍</a></li><li><a href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics</a></li><li><a href="https://www.fnnews.com/news/202608011131355775" target="_blank" rel="noopener">파이낸셜뉴스 · AI 도입과 임금 불만</a></li><li><a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li></ul>
     </div>
   </section>
 
-  <section class="editor" id="editor">
-    <div class="editor-label">편집장 총평</div>
-    <p>이번 주 HR 이슈를 관통하는 키워드는 '선택과 집중'이다. 채용은 대규모 정기공채 대신 팀핏에 맞는 소수 정예를 수시로 뽑는 방식으로, 보상은 공정성과 투명성을 증명하는 방식으로, 일하는 방식은 시간이 아닌 성과를 기준으로 재편되고 있다. AI는 이 모든 변화의 촉매이자 동시에 감원의 명분이 되고 있어, HR 담당자는 기술 도입 속도만큼이나 그로 인한 인력 재배치·재교육·공정성 설계에도 균형 있게 투자해야 한다.</p>
+  <section class="editor" id="review">
+    <div class="editor-label">전체 리뷰</div>
+    <p>최근 1~2주간 국내외 HR 이슈는 세 갈래로 요약된다. 채용은 정기공채 대신 팀핏 중심의 소수·수시 채용으로, 보상은 공정성·투명성을 증명하라는 요구로, 근무 방식은 시간 단축과 장소의 자유가 동시에 확대되는 쪽으로 움직였다. 다만 AI 도입을 둘러싼 평가는 엇갈린다 — 채용·평가 효율이 높아졌다는 확산 지표가 나오는 동시에, 편향·과잉감시·감원 명분화에 대한 우려와 노동계 반발도 비슷한 무게로 제기되고 있어 낙관도 우려도 아직 단정하기는 이르다. HR 담당자는 기술 도입 속도, 공정성 검증, 인력 재교육·보상 설계를 병행해서 판단해야 하는 국면에 있다.</p>
   </section>
   <div class="next"><strong>다음 호 예고</strong> — 다음 호에서는 국내 대기업의 2026년 하반기 정기 성과평가 개편 사례와 주4.5일제 도입 기업의 임금체계 설계 노하우를 심층 분석합니다.</div>
 
@@ -360,4 +393,26 @@ a{color:inherit;}
     <div class="footer-meta">2026 Vol.34 · Web Search + AI<br>2026.08.21 (금)</div>
   </div>
 </div>
+<button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+  <span>PDF로 저장</span>
+</button>
+<script>
+(function(){
+  document.querySelectorAll("details.deepdive").forEach(function(d){
+    d.addEventListener("toggle", function(){}); // no-op, keeps native behavior
+  });
+  window.addEventListener("beforeprint", function(){
+    document.querySelectorAll("details").forEach(function(d){
+      d.dataset.wasOpen = d.open ? "1" : "0";
+      d.open = true;
+    });
+  });
+  window.addEventListener("afterprint", function(){
+    document.querySelectorAll("details").forEach(function(d){
+      d.open = d.dataset.wasOpen === "1";
+    });
+  });
+})();
+</script>
 </body></html>
