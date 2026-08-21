@@ -71,6 +71,7 @@ web_search 툴을 8회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관�
 5. HR·AI 관련 유튜브 영상 (국내외 채용/HR 전문가 리뷰, 뉴스 리포트, 컨퍼런스 영상) — 최소 2건
 6. 근무 방식·직무 변화 (주4.5일제, 하이브리드/원격근무, 리스킬링)
 7. 감원·구조조정 동향 (빅테크 감원, AI발 구조조정, 그 배경에 대한 회의적 시각 포함)
+8. HRD·교육개발 (리스킬링·업스킬링 우선순위, 기업 교육 예산, AI 교육/LXP 도입, 사내 교육 트렌드)
 
 수집 완료 후 아래 형식으로 요약하세요. 각 항목에는 반드시 실제 검색된 제목, 출처명(매체명 또는 채널명), URL, 날짜(가능한 경우 YYYY.MM.DD)를 포함하고, 유튜브 영상은 항목 앞에 "[영상]"을 붙이세요.
 
@@ -95,6 +96,9 @@ web_search 툴을 8회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관�
 - 항목 (출처명, URL, 날짜)
 
 ### 감원·구조조정
+- 항목 (출처명, URL, 날짜)
+
+### HRD·교육개발
 - 항목 (출처명, URL, 날짜)
 
 출처 URL은 반드시 실제 검색된 URL만 기재하세요.`;
@@ -207,7 +211,7 @@ const PART_A_SYSTEM = `${COMMON_RULES}
   }
 }
 
-stats 정확히 5개(색상은 issue/tech/work 섞어서 배분), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
+stats 정확히 5개(색상은 issue/tech/work/hrd 중에서 섞어서 배분 — 4가지 색을 고르게 쓸 것), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
 stats나 cards에 자연스럽게 넣을 수 있다면 유튜브 영상 출처를 1개 이상 포함하세요.`;
 
 // ─────────────────────────────────────────────────────────
@@ -247,23 +251,33 @@ const PART_B_SYSTEM = `${COMMON_RULES}
 - chart.bars는 3~4개, 없으면 빈 배열로.`;
 
 // ─────────────────────────────────────────────────────────
-// STEP 2C: pillar "work" + overallReview
+// STEP 2C: pillar "work" + pillar "hrd" + overallReview
 // ─────────────────────────────────────────────────────────
 const PART_C_SYSTEM = `${COMMON_RULES}
 
 출력 스키마:
 {
-  "pillar": {
-    "id": "work", "color": "work", "eyebrow": "PILLAR 03 · WORK REVIEW", "icon": "🧭",
-    "title": "직무 · 일하는 방식 변화 리뷰",
-    "framing": "이 섹션을 관통하는 흐름 1~2문장",
-    "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
-    ${PILLAR_TAIL_SCHEMA}
+  "pillars": {
+    "work": {
+      "id": "work", "color": "work", "eyebrow": "PILLAR 03 · WORK REVIEW", "icon": "🧭",
+      "title": "직무 · 일하는 방식 변화 리뷰",
+      "framing": "이 섹션을 관통하는 흐름 1~2문장",
+      "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+      ${PILLAR_TAIL_SCHEMA}
+    },
+    "hrd": {
+      "id": "hrd", "color": "hrd", "eyebrow": "PILLAR 04 · HRD REVIEW", "icon": "🎓",
+      "title": "HRD · 교육개발 변화 리뷰",
+      "framing": "이 섹션을 관통하는 흐름 1~2문장 (교육 예산·리스킬링·AI 교육 등)",
+      "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+      ${PILLAR_TAIL_SCHEMA}
+    }
   },
-  "overallReview": "전체 리뷰 3~4문장. 반드시 '최근 1~2주' 기간을 명시하며 이슈·기술·근무방식 세 축을 요약하고, 기술 변화에 대해 성과와 우려를 함께 언급해 중립적 톤을 유지할 것. 도출된 시사점으로 마무리."
+  "overallReview": "전체 리뷰 3~4문장. 반드시 '최근 1~2주' 기간을 명시하며 이슈·기술·근무방식·HRD 네 축을 요약하고, 기술 변화에 대해 성과와 우려를 함께 언급해 중립적 톤을 유지할 것. 도출된 시사점으로 마무리."
 }
 
 work 섹션 cards 중 최소 1개는 감원·구조조정·임금 불만 등 근무 변화의 부담이 되는 측면도 함께 다루세요.
+hrd 섹션은 리스킬링·업스킬링 우선순위, 기업 교육 예산 전망, AI 교육/LXP 도입 등 검색 데이터의 "HRD·교육개발" 항목을 바탕으로 작성하세요. deepDive는 없으면 null로 두세요.
 overallReview는 필수입니다. "다음 호 예고" 같은 필드는 만들지 마세요.`;
 
 // ─────────────────────────────────────────────────────────
@@ -379,9 +393,11 @@ function renderChart(chart, color) {
       <div class="chart-title">${esc(chart.title)}</div>
       ${chart.bars.map((b) => `
         <div class="bar-row">
-          <div class="bar-lbl">${esc(b.label)}${cite(src(b), color)}</div>
+          <div class="bar-top">
+            <span class="bar-lbl">${esc(b.label)}${cite(src(b), color)}</span>
+            <span class="bar-pct">${b.value}%</span>
+          </div>
           <div class="bar-track"><div class="bar-fill bar-${color}" style="width:${Math.min(Number(b.value) || 0, 100)}%"></div></div>
-          <div class="bar-pct">${b.value}%</div>
         </div>`).join("")}
     </div>`;
 }
@@ -446,7 +462,7 @@ function generateHTML(data) {
       ${src(s) ? `<a class="stat-src" href="${esc(src(s).url)}" target="_blank" rel="noopener">${esc(src(s).name)} ↗</a>` : ""}
     </div>`).join("");
 
-  const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work].filter(Boolean);
+  const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work, data.pillars?.hrd].filter(Boolean);
   const navHtml = pillars.map((p) => `<a class="nav-pill nav-pill-${p.color}" href="#${esc(p.id)}"><span>${esc(p.icon)}</span>${esc((p.title || "").split(" — ").pop().split(" · ").pop())}</a>`).join("");
   const pillarsHtml = pillars.map(renderPillar).join("");
 
@@ -462,12 +478,13 @@ function generateHTML(data) {
   --issue:#45529A; --issue-tint:#ECEEF9; --issue-tint-strong:#D8DCF2;
   --tech:#12816E; --tech-tint:#E2F3EE; --tech-tint-strong:#C7E9DF;
   --work:#A9631E; --work-tint:#FBEEDC; --work-tint-strong:#F3DCB8;
+  --hrd:#7C5295; --hrd-tint:#F0E9F5; --hrd-tint-strong:#E1D0EA;
   --chip-bg:#EFEFEB;
   --fd:"Gowun Batang",serif; --fb:"Gothic A1",sans-serif; --fm:"IBM Plex Mono",monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
-body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:17px;line-height:1.75;font-feature-settings:"tnum" 1;}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:17px;line-height:1.75;font-feature-settings:"tnum" 1;word-break:keep-all;overflow-wrap:break-word;}
 .wrap{max-width:820px;margin:0 auto;padding:56px 24px 120px;}
 a{color:inherit;}
 ::selection{background:var(--issue-tint-strong);}
@@ -481,7 +498,7 @@ a{color:inherit;}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
 .stat{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
 .stat-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
-.stat-issue{color:var(--issue);}.stat-tech{color:var(--tech);}.stat-work{color:var(--work);}
+.stat-issue{color:var(--issue);}.stat-tech{color:var(--tech);}.stat-work{color:var(--work);}.stat-hrd{color:var(--hrd);}
 .stat-desc{font-size:13px;color:var(--muted);line-height:1.5;}
 .stat-change{font-family:var(--fm);font-size:11.5px;color:var(--muted);}
 .stat-src{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);margin-top:2px;width:fit-content;}
@@ -492,6 +509,7 @@ a{color:inherit;}
 .nav-pill-issue{border-color:var(--issue);color:var(--issue);}
 .nav-pill-tech{border-color:var(--tech);color:var(--tech);}
 .nav-pill-work{border-color:var(--work);color:var(--work);}
+.nav-pill-hrd{border-color:var(--hrd);color:var(--hrd);}
 .pillar{margin-bottom:76px;scroll-margin-top:24px;}
 .pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
 .pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
@@ -500,6 +518,7 @@ a{color:inherit;}
 .pillar-head-issue .pillar-eyebrow{color:var(--issue);}
 .pillar-head-tech .pillar-eyebrow{color:var(--tech);}
 .pillar-head-work .pillar-eyebrow{color:var(--work);}
+.pillar-head-hrd .pillar-eyebrow{color:var(--hrd);}
 .pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;max-width:66ch;}
 .timeline{background:var(--paper-sunken);border:1px solid var(--divider);border-radius:16px;padding:22px 26px;margin-bottom:24px;}
 .timeline-title{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
@@ -509,6 +528,7 @@ a{color:inherit;}
 .tl-issue{background:var(--issue-tint-strong);color:var(--issue);}
 .tl-tech{background:var(--tech-tint-strong);color:var(--tech);}
 .tl-work{background:var(--work-tint-strong);color:var(--work);}
+.tl-hrd{background:var(--hrd-tint-strong);color:var(--hrd);}
 .tl-text{font-size:15px;line-height:1.7;color:var(--ink);}
 .group{margin-bottom:22px;}
 .group-label{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px;border-left:3px solid var(--divider);}
@@ -519,6 +539,7 @@ a{color:inherit;}
 .card-tag-issue{background:var(--issue-tint);color:var(--issue);}
 .card-tag-tech{background:var(--tech-tint);color:var(--tech);}
 .card-tag-work{background:var(--work-tint);color:var(--work);}
+.card-tag-hrd{background:var(--hrd-tint);color:var(--hrd);}
 .card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;color:var(--ink);}
 .card-body{display:flex;flex-direction:column;gap:10px;}
 .claim{font-size:16px;line-height:1.8;color:var(--ink);}
@@ -526,23 +547,26 @@ a{color:inherit;}
 .tag-issue{background:var(--issue-tint);color:var(--issue);}
 .tag-tech{background:var(--tech-tint);color:var(--tech);}
 .tag-work{background:var(--work-tint);color:var(--work);}
+.tag-hrd{background:var(--hrd-tint);color:var(--hrd);}
 .tag:hover{background:var(--issue-tint-strong);}
 .tag-tech:hover{background:var(--tech-tint-strong);}
 .tag-work:hover{background:var(--work-tint-strong);}
+.tag-hrd:hover{background:var(--hrd-tint-strong);}
 .chart{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;margin-bottom:24px;}
 .chart-title{font-family:var(--fm);font-size:12.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
-.bar-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.bar-row{margin-bottom:20px;}
 .bar-row:last-child{margin-bottom:0;}
-.bar-lbl{font-size:14px;color:var(--muted);min-width:150px;max-width:220px;text-align:right;flex-shrink:0;line-height:1.5;}
-.bar-track{flex:1;background:var(--chip-bg);height:12px;border-radius:6px;overflow:hidden;}
+.bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:9px;flex-wrap:wrap;}
+.bar-lbl{font-size:14.5px;color:var(--muted);line-height:1.6;}
+.bar-track{width:100%;background:var(--chip-bg);height:11px;border-radius:6px;overflow:hidden;}
 .bar-fill{height:100%;border-radius:6px;}
-.bar-issue{background:var(--issue);}.bar-tech{background:var(--tech);}.bar-work{background:var(--work);}
-.bar-pct{font-family:var(--fm);font-size:13.5px;font-weight:600;min-width:52px;text-align:right;}
+.bar-issue{background:var(--issue);}.bar-tech{background:var(--tech);}.bar-work{background:var(--work);}.bar-hrd{background:var(--hrd);}
+.bar-pct{font-family:var(--fm);font-size:14.5px;font-weight:700;color:var(--ink);flex-shrink:0;}
 .deepdive{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;margin-bottom:24px;overflow:hidden;}
 .deepdive summary{list-style:none;cursor:pointer;padding:18px 26px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16px;color:var(--ink);}
 .deepdive summary::-webkit-details-marker{display:none;}
 .dd-badge{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:6px;flex-shrink:0;}
-.dd-badge-issue{background:var(--issue);}.dd-badge-tech{background:var(--tech);}.dd-badge-work{background:var(--work);}
+.dd-badge-issue{background:var(--issue);}.dd-badge-tech{background:var(--tech);}.dd-badge-work{background:var(--work);}.dd-badge-hrd{background:var(--hrd);}
 .dd-chevron{margin-left:auto;color:var(--muted);transition:transform .2s;font-size:14px;}
 .deepdive[open] .dd-chevron{transform:rotate(180deg);}
 .dd-body{padding:0 26px 22px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--divider);padding-top:16px;}
@@ -555,12 +579,15 @@ a{color:inherit;}
 .insight-tech{background:var(--tech-tint);}
 .insight-tech .insight-label{background:var(--tech);color:#fff;}
 .insight-work{background:var(--work-tint);}
+.insight-hrd{background:var(--hrd-tint);}
 .insight-work .insight-label{background:var(--work);color:#fff;}
+.insight-hrd .insight-label{background:var(--hrd);color:#fff;}
 .chip-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px;}
 .chip{font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;}
 .chip-issue{background:var(--issue-tint);color:var(--issue);}
 .chip-tech{background:var(--tech-tint);color:var(--tech);}
 .chip-work{background:var(--work-tint);color:var(--work);}
+.chip-hrd{background:var(--hrd-tint);color:var(--hrd);}
 .cite-index{border-top:1px dashed var(--divider);padding-top:16px;}
 .cite-index-label{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 .cite-index ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
@@ -576,7 +603,6 @@ a{color:inherit;}
   .wrap{padding:32px 18px 90px;}
   .hero{padding:32px 24px;border-radius:16px;}
   .stats{grid-template-columns:repeat(2,1fr);}
-  .bar-lbl{min-width:100px;max-width:120px;font-size:12.5px;}
   .pillar-head{align-items:flex-start;}
   .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
   .pdf-btn span{display:none;}
@@ -588,13 +614,15 @@ a{color:inherit;}
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{margin:14mm;}
-  body{font-size:12.5px;}
+  body{font-size:12.5px;orphans:3;widows:3;word-break:keep-all;overflow-wrap:break-word;}
   .no-print,.pdf-btn,.pillar-nav{display:none !important;}
   .wrap{max-width:none;padding:0;}
-  .pillar{margin-bottom:34px;page-break-inside:avoid;}
-  .card,.chart,.deepdive,.timeline{page-break-inside:avoid;}
+  .pillar{margin-bottom:34px;break-inside:auto;}
+  .pillar-head{break-after:avoid;page-break-after:avoid;}
+  .card,.chart,.deepdive,.timeline,.stat,.insight{break-inside:avoid;page-break-inside:avoid;}
+  .card-body,.dd-body{break-inside:avoid;page-break-inside:avoid;}
   .deepdive .dd-chevron{display:none;}
-  .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);}
+  .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);word-break:break-all;}
   a{text-decoration:none;}
 }
 </style></head><body>
@@ -671,8 +699,8 @@ async function main() {
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  console.log("📋 Step 2C: 근무방식 필러·전체 리뷰 생성...");
-  const partC = await generateJSON(PART_C_SYSTEM, "Part C (근무방식)");
+  console.log("📋 Step 2C: 근무방식·HRD 필러·전체 리뷰 생성...");
+  const partC = await generateJSON(PART_C_SYSTEM, "Part C (근무방식·HRD)");
 
   console.log("\n🔧 JSON 병합 중...");
   const merged = {
@@ -681,12 +709,13 @@ async function main() {
     pillars: {
       issue: partA.pillar || null,
       tech: partB.pillar || null,
-      work: partC.pillar || null,
+      work: partC.pillars?.work || null,
+      hrd: partC.pillars?.hrd || null,
     },
     overallReview: partC.overallReview || "",
   };
   const pillarCount = Object.values(merged.pillars).filter(Boolean).length;
-  console.log(`   📊 필러 ${pillarCount}/3개 · 통계 ${merged.stats.length}개`);
+  console.log(`   📊 필러 ${pillarCount}/4개 · 통계 ${merged.stats.length}개`);
 
   const html = generateHTML(merged);
   fs.writeFileSync(path.join(process.cwd(), "index.html"), html, "utf-8");
