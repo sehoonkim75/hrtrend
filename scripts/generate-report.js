@@ -1,6 +1,8 @@
 // scripts/generate-report.js
-// 구조: Step1 웹검색으로 실제 데이터 수집 → Step2 JSON 생성(3분할) → HTML 저장
-// v2: 3개 축(이슈/기술/일하는 방식) 브리핑 레이아웃, 문구 단위 출처 태깅, 균형 톤, PDF 저장 버튼
+// 구조: Step1 웹검색(기사+영상)으로 실제 데이터 수집 → Step2 JSON 생성(3분할) → HTML 저장
+// v3: 화이트모드(눈이 덜 피로한 톤), 3개 축(이슈/기술/일하는 방식) 브리핑 레이아웃,
+//     기술 섹션은 서브그룹+타임라인으로 심화(최근 2주 데이터 우선), 문구 단위 출처 태깅
+//     (기사·유튜브 영상 모두 포함), 균형 톤, PDF 저장 버튼. '다음 호 예고'는 없음.
 
 const Anthropic = require("@anthropic-ai/sdk");
 const fs = require("fs");
@@ -54,20 +56,23 @@ async function withRetry(fn, label) {
 }
 
 // ─────────────────────────────────────────────────────────
-// STEP 1: 웹검색 agentic loop → 원문 수집
+// STEP 1: 웹검색 agentic loop → 원문 수집 (기사 + 유튜브 영상)
 // ─────────────────────────────────────────────────────────
 const SEARCH_SYSTEM = `당신은 HR 리서처입니다.
-web_search 툴을 6회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
+web_search 툴을 8회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
+단순 뉴스 기사·웹문서만으로는 최신 트렌드를 따라가기 어려우므로, 반드시 유튜브 영상도 함께 검색하세요
+(검색어에 "유튜브" 또는 "site:youtube.com"을 포함해 최소 2회 이상 검색).
 
 검색 주제 (각각 1회 이상, 최근 1~2주 발생 이슈 우선):
 1. 국내 채용·평가·보상 이슈 (채용 트렌드, 임금 인상률, 성과급, 임금체계 개편)
 2. 글로벌 채용·보상 이슈 (해외 채용 동향, pay transparency, AI 채용 규제)
-3. HR 기술 도입 현황 (AI 채용솔루션, AI 에이전트, HR테크 도입률)
-4. HR 기술의 리스크·반발 (AI 편향, 오탈락, 노동계 반발, 감원 명분화 논란, 규제 이슈) — 반드시 최소 2건 이상 수집. 기술 도입에 대한 긍정적인 수치만 모으지 말고 비판·우려·반발 보도를 의식적으로 함께 찾을 것.
-5. 근무 방식·직무 변화 (주4.5일제, 하이브리드/원격근무, 리스킬링)
-6. 감원·구조조정 동향 (빅테크 감원, AI발 구조조정, 그 배경에 대한 회의적 시각 포함)
+3. HR 기술 도입 현황 — 최근 2주 이내 뉴스 우선 (AI 채용솔루션, AI 에이전트, HR테크 도입률)
+4. HR 기술의 리스크·반발 — 최근 2주 이내 뉴스 우선, 최소 2건 이상. 기술 도입에 대한 긍정적인 수치만 모으지 말고 비판·우려·반발 보도를 의식적으로 함께 찾을 것 (AI 편향, 오탈락, 노동계 반발, 감원 명분화 논란, 규제 이슈)
+5. HR·AI 관련 유튜브 영상 (국내외 채용/HR 전문가 리뷰, 뉴스 리포트, 컨퍼런스 영상) — 최소 2건
+6. 근무 방식·직무 변화 (주4.5일제, 하이브리드/원격근무, 리스킬링)
+7. 감원·구조조정 동향 (빅테크 감원, AI발 구조조정, 그 배경에 대한 회의적 시각 포함)
 
-수집 완료 후 아래 형식으로 요약하세요. 각 항목에는 반드시 실제 검색된 기사 제목, 출처명, URL, 날짜를 포함하세요.
+수집 완료 후 아래 형식으로 요약하세요. 각 항목에는 반드시 실제 검색된 제목, 출처명(매체명 또는 채널명), URL, 날짜(가능한 경우 YYYY.MM.DD)를 포함하고, 유튜브 영상은 항목 앞에 "[영상]"을 붙이세요.
 
 ## 수집된 HR 트렌드 데이터
 
@@ -77,11 +82,14 @@ web_search 툴을 6회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관�
 ### 글로벌 채용·보상
 - 항목 (출처명, URL, 날짜)
 
-### HR 기술 도입
+### HR 기술 도입 (최근 2주 우선)
 - 항목 (출처명, URL, 날짜)
 
-### HR 기술 리스크·반발 (필수)
+### HR 기술 리스크·반발 (최근 2주 우선, 필수)
 - 항목 (출처명, URL, 날짜)
+
+### HR·AI 관련 유튜브 영상 (필수, [영상] 표시)
+- [영상] 항목 (채널명, URL, 게시일)
 
 ### 근무 방식·직무 변화
 - 항목 (출처명, URL, 날짜)
@@ -92,10 +100,10 @@ web_search 툴을 6회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관�
 출처 URL은 반드시 실제 검색된 URL만 기재하세요.`;
 
 async function collectSearchData() {
-  console.log("   web_search 시작...");
+  console.log("   web_search 시작 (기사 + 유튜브)...");
   const messages = [{
     role: "user",
-    content: `${TOPIC} 관련 최신 데이터를 web_search로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고, 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞춰주세요.`,
+    content: `${TOPIC} 관련 최신 데이터를 web_search로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요.`,
   }];
 
   let response = await withRetry(() =>
@@ -109,7 +117,7 @@ async function collectSearchData() {
   );
 
   let round = 0;
-  while (response.stop_reason === "tool_use" && round < 12) {
+  while (response.stop_reason === "tool_use" && round < 14) {
     round++;
     const toolUses = response.content.filter((b) => b.type === "tool_use");
     toolUses.forEach((t) => console.log(`   🔎 검색 [${round}]: "${t.input?.query || ""}"`));
@@ -154,16 +162,17 @@ const COMMON_RULES = `당신은 HR 보고서 JSON 생성기입니다.
 제공된 실제 검색 데이터를 바탕으로 JSON만 출력하세요.
 마크다운 코드블록 없이 순수 JSON만 출력. 설명 문장 절대 금지.
 문자열 안에 줄바꿈 금지. 작은따옴표 금지. 역슬래시 금지.
-출처 URL은 검색 데이터에 있는 실제 URL만 사용하고, 없으면 해당 기사가 실린 매체의 공식 홈페이지 URL을 사용하세요.
+출처 URL은 검색 데이터에 있는 실제 URL만 사용하고, 없으면 해당 자료가 실린 매체/채널의 공식 홈페이지 URL을 사용하세요.
+검색 데이터에 [영상] 표시가 있는 유튜브 항목이 있으면 관련 있는 claim에 적극적으로 srcUrl로 사용하세요 — 기사(웹문서)와 영상을 균형 있게 섞어 쓰세요.
 톤은 최대한 중립적으로 작성하세요 — 특히 기술(AI) 관련 내용은 도입·효율 등 긍정적 측면과 편향·반발·감원 명분화 등 우려되는 측면을 같은 비중으로 다루세요.
-claims(문구)는 반드시 검색 데이터에 있는 구체적 사실·수치 문장으로 작성하고, 그 문구 바로 옆에 실제로 그 내용을 다룬 기사의 srcName(매체명+기사제목 요약)과 srcUrl을 붙이세요. 근거가 불확실한 문구는 만들지 마세요.
+claims(문구)는 반드시 검색 데이터에 있는 구체적 사실·수치 문장으로 작성하고, 그 문구 바로 옆에 실제로 그 내용을 다룬 자료의 srcName(매체/채널명 + 제목 요약)과 srcUrl을 붙이세요. 근거가 불확실한 문구는 만들지 마세요.
 insight(시사점) 필드는 claims를 바탕으로 한 편집자의 해석이므로 출처를 붙이지 않습니다.`;
 
 const CARD_SCHEMA = `{
   "tag": "짧은 분류 태그",
   "title": "카드 제목",
   "claims": [
-    { "text": "구체적 사실 문장", "srcName": "매체명 · 기사 요약", "srcUrl": "https://실제URL" }
+    { "text": "구체적 사실 문장", "srcName": "매체/채널명 · 제목 요약", "srcUrl": "https://실제URL" }
   ]
 }`;
 
@@ -179,11 +188,11 @@ const PART_A_SYSTEM = `${COMMON_RULES}
 출력 스키마:
 {
   "meta": {
-    "headline": "이번 보고서 헤드라인 한 줄(중립적 톤)",
+    "headline": "이번 보고서 헤드라인 한 줄(중립적 톤, 20자 내외로 짧게 — 긴 문장은 제목에서 단어가 어색하게 줄바꿈될 수 있으니 피할 것)",
     "subheadline": "핵심 요약 2문장. 최근 1~2주 이슈를 다룬다는 점과, 기술 변화의 성과·우려를 함께 짚는다는 점을 포함"
   },
   "stats": [
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명(가능하면 날짜 포함)", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
     { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "tech" },
     { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "work" },
     { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
@@ -198,10 +207,11 @@ const PART_A_SYSTEM = `${COMMON_RULES}
   }
 }
 
-stats 정확히 5개(색상은 issue/tech/work 섞어서 배분), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능`;
+stats 정확히 5개(색상은 issue/tech/work 섞어서 배분), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
+stats나 cards에 자연스럽게 넣을 수 있다면 유튜브 영상 출처를 1개 이상 포함하세요.`;
 
 // ─────────────────────────────────────────────────────────
-// STEP 2B: pillar "tech" (HR 기술 변화 — 균형 필수)
+// STEP 2B: pillar "tech" (HR 기술 변화 — 서브그룹+타임라인, 균형·최신성 필수)
 // ─────────────────────────────────────────────────────────
 const PART_B_SYSTEM = `${COMMON_RULES}
 
@@ -210,8 +220,15 @@ const PART_B_SYSTEM = `${COMMON_RULES}
   "pillar": {
     "id": "tech", "color": "tech", "eyebrow": "PILLAR 02 · TECH REVIEW", "icon": "🤖",
     "title": "HR 기술 변화 리뷰",
-    "framing": "이 섹션을 관통하는 흐름 1~2문장(중립적으로)",
-    "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+    "framing": "이 섹션은 최근 2주 발표 자료 중심이라는 점을 밝히는 1~2문장(중립적으로)",
+    "timeline": [
+      { "date": "MM.DD 형식", "text": "최근 2주 내 실제 사건/발표 한 문장", "srcName": "매체/채널명", "srcUrl": "https://실제URL" }
+    ],
+    "groups": [
+      { "label": "도입 · 자동화", "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}] },
+      { "label": "리스크 · 반발", "cards": [${CARD_SCHEMA}] },
+      { "label": "규제 · 거버넌스", "cards": [${CARD_SCHEMA}] }
+    ],
     "chart": {
       "title": "차트 제목",
       "bars": [
@@ -222,13 +239,15 @@ const PART_B_SYSTEM = `${COMMON_RULES}
   }
 }
 
-cards는 정확히 3개여야 하며, 그 중 최소 1개는 반드시 "리스크 · 반발" 성격의 카드여야 합니다
-(예: AI 채용 편향, 오탈락, 노동계 반발, 과잉 감시 논란, 감원 명분화 비판 등 — 검색 데이터의 리스크·반발 관련 항목을 사용).
-나머지 카드는 도입 현황·긍정적 지표를 다뤄도 되지만, 전체적으로 긍정/우려 비중이 한쪽으로 치우치지 않게 하세요.
-chart.bars는 3~4개, 없으면 bars를 빈 배열로.`;
+규칙:
+- timeline은 반드시 검색 데이터에서 날짜가 확인되는(가능한 최근 2주 이내) 항목 3~5개로 구성하세요. 날짜를 알 수 없는 항목은 timeline에 넣지 마세요.
+- groups는 정확히 3개("도입 · 자동화", "리스크 · 반발", "규제 · 거버넌스")이며, "리스크 · 반발" 그룹은 반드시 채워야 합니다(편향, 오탈락, 노동계 반발, 청년 고용 위축, 감원 명분화 비판 등).
+- claims 전체에서 최소 1개 이상은 유튜브 영상(srcUrl에 youtube.com 또는 youtu.be 포함) 출처를 사용하세요.
+- 긍정/우려 비중이 한쪽으로 치우치지 않게 하세요.
+- chart.bars는 3~4개, 없으면 빈 배열로.`;
 
 // ─────────────────────────────────────────────────────────
-// STEP 2C: pillar "work" + overallReview + nextIssue
+// STEP 2C: pillar "work" + overallReview
 // ─────────────────────────────────────────────────────────
 const PART_C_SYSTEM = `${COMMON_RULES}
 
@@ -241,12 +260,11 @@ const PART_C_SYSTEM = `${COMMON_RULES}
     "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
     ${PILLAR_TAIL_SCHEMA}
   },
-  "overallReview": "전체 리뷰 3~4문장. 반드시 '최근 1~2주' 기간을 명시하며 이슈·기술·근무방식 세 축을 요약하고, 기술 변화에 대해 성과와 우려를 함께 언급해 중립적 톤을 유지할 것. 도출된 시사점으로 마무리.",
-  "nextIssue": "다음 호 예고 한 문장"
+  "overallReview": "전체 리뷰 3~4문장. 반드시 '최근 1~2주' 기간을 명시하며 이슈·기술·근무방식 세 축을 요약하고, 기술 변화에 대해 성과와 우려를 함께 언급해 중립적 톤을 유지할 것. 도출된 시사점으로 마무리."
 }
 
 work 섹션 cards 중 최소 1개는 감원·구조조정·임금 불만 등 근무 변화의 부담이 되는 측면도 함께 다루세요.
-overallReview, nextIssue 필수.`;
+overallReview는 필수입니다. "다음 호 예고" 같은 필드는 만들지 마세요.`;
 
 // ─────────────────────────────────────────────────────────
 // JSON 파서 (5단계 fallback)
@@ -301,9 +319,11 @@ async function generateJSON(system, label) {
 let searchDataGlobal = "";
 
 // ─────────────────────────────────────────────────────────
-// 렌더러 (JSON → HTML) — 문구 단위 출처 태깅, 3-pillar 브리핑 레이아웃, PDF 저장
+// 렌더러 (JSON → HTML) — 화이트모드, 문구 단위 출처 태깅(기사·영상),
+// 기술 섹션 서브그룹+타임라인, PDF 저장, '다음 호 예고' 없음
 // ─────────────────────────────────────────────────────────
 function esc(s) { return s == null ? "" : String(s); }
+function isVideo(url) { return /youtube\.com|youtu\.be/i.test(url || ""); }
 
 function src(item) {
   if (!item || !item.srcUrl) return null;
@@ -312,7 +332,8 @@ function src(item) {
 
 function cite(s, color) {
   if (!s) return "";
-  return ` <a class="tag tag-${color}" href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)} ↗</a>`;
+  const icon = isVideo(s.url) ? "🎥" : "🔗";
+  return ` <a class="tag tag-${color}" href="${esc(s.url)}" target="_blank" rel="noopener">${icon} ${esc(s.name)}</a>`;
 }
 
 function renderClaims(claims, color) {
@@ -325,6 +346,30 @@ function renderCards(cards, color) {
       <div class="card-head"><span class="card-tag card-tag-${color}">${esc(c.tag)}</span><h4>${esc(c.title)}</h4></div>
       <div class="card-body">${renderClaims(c.claims, color)}</div>
     </article>`).join("");
+}
+
+function renderGroups(groups, color) {
+  if (!groups) return "";
+  return groups.map((g) => `
+    <div class="group">
+      <div class="group-label">${esc(g.label)}</div>
+      <div class="card-stack">${renderCards(g.cards, color)}</div>
+    </div>`).join("");
+}
+
+function renderTimeline(items, color) {
+  if (!items || !items.length) return "";
+  return `
+    <div class="timeline">
+      <div class="timeline-title">이번 주 타임라인 · 최근 2주</div>
+      <ol>
+        ${items.map((t) => `
+          <li>
+            <span class="tl-date tl-${color}">${esc(t.date)}</span>
+            <span class="tl-text">${esc(t.text)}${cite(src(t), color)}</span>
+          </li>`).join("")}
+      </ol>
+    </div>`;
 }
 
 function renderChart(chart, color) {
@@ -356,6 +401,8 @@ function dedupeSources(p) {
   const map = new Map();
   const add = (s) => { if (s && !map.has(s.url)) map.set(s.url, s); };
   (p.cards || []).forEach((c) => (c.claims || []).forEach((cl) => add(src(cl))));
+  (p.groups || []).forEach((g) => (g.cards || []).forEach((c) => (c.claims || []).forEach((cl) => add(src(cl)))));
+  (p.timeline || []).forEach((t) => add(src(t)));
   ((p.chart || {}).bars || []).forEach((b) => add(src(b)));
   ((p.deepDive || {}).paragraphs || []).forEach((pp) => add(src(pp)));
   return [...map.values()];
@@ -363,6 +410,7 @@ function dedupeSources(p) {
 
 function renderPillar(p) {
   if (!p || !p.id) return "";
+  const cardsBlock = p.groups ? renderGroups(p.groups, p.color) : `<div class="card-stack">${renderCards(p.cards, p.color)}</div>`;
   return `
   <section class="pillar" id="${esc(p.id)}">
     <header class="pillar-head pillar-head-${p.color}">
@@ -373,7 +421,8 @@ function renderPillar(p) {
       </div>
     </header>
     <p class="pillar-framing">${esc(p.framing)}</p>
-    <div class="card-stack">${renderCards(p.cards, p.color)}</div>
+    ${renderTimeline(p.timeline, p.color)}
+    ${cardsBlock}
     ${renderChart(p.chart, p.color)}
     ${renderDeepDive(p.deepDive, p.color)}
     <div class="insight insight-${p.color}">
@@ -382,8 +431,8 @@ function renderPillar(p) {
     </div>
     <div class="chip-row">${(p.keywords || []).map((k) => `<span class="chip chip-${p.color}">${esc(k)}</span>`).join("")}</div>
     <div class="cite-index">
-      <div class="cite-index-label">이 섹션에서 인용한 기사</div>
-      <ul>${dedupeSources(p).map((s) => `<li><a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
+      <div class="cite-index-label">이 섹션에서 인용한 자료</div>
+      <ul>${dedupeSources(p).map((s) => `<li>${isVideo(s.url) ? "🎥" : "🔗"} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
     </div>
   </section>`;
 }
@@ -409,28 +458,12 @@ function generateHTML(data) {
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F6F7F5; --paper-raised:#FFFFFF; --ink:#14181F; --muted:#5B6169; --divider:#DCDFDA;
-  --issue:#3B4C9E; --issue-tint:#E1E5F6; --issue-tint-strong:#CBD3F0;
-  --tech:#0E7C6B; --tech-tint:#D7F0E9; --tech-tint-strong:#BEE6D9;
-  --work:#B5651D; --work-tint:#F6E4CC; --work-tint-strong:#EFD3AA;
-  --hero-bg:#14181F; --hero-fg:#F6F7F5; --chip-bg:rgba(20,24,31,.06);
+  --paper:#FAFAF8; --paper-raised:#FFFFFF; --paper-sunken:#F1F1EC; --ink:#24272C; --muted:#666B72; --divider:#E4E5E1;
+  --issue:#45529A; --issue-tint:#ECEEF9; --issue-tint-strong:#D8DCF2;
+  --tech:#12816E; --tech-tint:#E2F3EE; --tech-tint-strong:#C7E9DF;
+  --work:#A9631E; --work-tint:#FBEEDC; --work-tint-strong:#F3DCB8;
+  --chip-bg:#EFEFEB;
   --fd:"Gowun Batang",serif; --fb:"Gothic A1",sans-serif; --fm:"IBM Plex Mono",monospace;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --paper:#14171B; --paper-raised:#1B1F24; --ink:#ECEDEC; --muted:#9AA0A6; --divider:#2C3036;
-    --issue:#8C9EEB; --issue-tint:rgba(140,158,235,.14); --issue-tint-strong:rgba(140,158,235,.24);
-    --tech:#4FD6BC; --tech-tint:rgba(79,214,188,.14); --tech-tint-strong:rgba(79,214,188,.24);
-    --work:#E3A15B; --work-tint:rgba(227,161,91,.14); --work-tint-strong:rgba(227,161,91,.24);
-    --hero-bg:#0B0D10; --hero-fg:#F2F3F1; --chip-bg:rgba(255,255,255,.07);
-  }
-}
-:root[data-theme="dark"]{
-  --paper:#14171B; --paper-raised:#1B1F24; --ink:#ECEDEC; --muted:#9AA0A6; --divider:#2C3036;
-  --issue:#8C9EEB; --issue-tint:rgba(140,158,235,.14); --issue-tint-strong:rgba(140,158,235,.24);
-  --tech:#4FD6BC; --tech-tint:rgba(79,214,188,.14); --tech-tint-strong:rgba(79,214,188,.24);
-  --work:#E3A15B; --work-tint:rgba(227,161,91,.14); --work-tint-strong:rgba(227,161,91,.24);
-  --hero-bg:#0B0D10; --hero-fg:#F2F3F1; --chip-bg:rgba(255,255,255,.07);
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;}
@@ -441,10 +474,10 @@ a{color:inherit;}
 .masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:40px;flex-wrap:wrap;}
 .brand{font-family:var(--fm);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600;}
 .issue-tag{font-family:var(--fm);font-size:13px;letter-spacing:1px;color:var(--ink);background:var(--chip-bg);padding:6px 14px;border-radius:999px;}
-.hero{background:var(--hero-bg);color:var(--hero-fg);border-radius:20px;padding:48px 40px;margin-bottom:44px;}
-.hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);opacity:.95;margin-bottom:18px;}
-.hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(32px,5vw,50px);line-height:1.25;text-wrap:balance;margin-bottom:20px;}
-.hero p{font-size:18px;line-height:1.8;color:rgba(246,247,245,.82);max-width:64ch;}
+.hero{background:var(--issue-tint);border:1px solid var(--issue-tint-strong);border-top:4px solid var(--issue);color:var(--ink);border-radius:16px;padding:44px 40px;margin-bottom:44px;}
+.hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);margin-bottom:18px;font-weight:600;}
+.hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.3;text-wrap:balance;margin-bottom:20px;color:var(--ink);}
+.hero p{font-size:17.5px;line-height:1.85;color:#41454C;max-width:64ch;}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
 .stat{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
 .stat-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
@@ -463,19 +496,30 @@ a{color:inherit;}
 .pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
 .pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
 .pillar-eyebrow{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
-.pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;}
+.pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;color:var(--ink);}
 .pillar-head-issue .pillar-eyebrow{color:var(--issue);}
 .pillar-head-tech .pillar-eyebrow{color:var(--tech);}
 .pillar-head-work .pillar-eyebrow{color:var(--work);}
-.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:28px;max-width:66ch;}
-.card-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:24px;}
+.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;max-width:66ch;}
+.timeline{background:var(--paper-sunken);border:1px solid var(--divider);border-radius:16px;padding:22px 26px;margin-bottom:24px;}
+.timeline-title{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.timeline ol{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.timeline li{display:flex;gap:14px;align-items:baseline;}
+.tl-date{font-family:var(--fm);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:6px;flex-shrink:0;white-space:nowrap;}
+.tl-issue{background:var(--issue-tint-strong);color:var(--issue);}
+.tl-tech{background:var(--tech-tint-strong);color:var(--tech);}
+.tl-work{background:var(--work-tint-strong);color:var(--work);}
+.tl-text{font-size:15px;line-height:1.7;color:var(--ink);}
+.group{margin-bottom:22px;}
+.group-label{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px;border-left:3px solid var(--divider);}
+.card-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:8px;}
 .card{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;}
 .card-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
 .card-tag{font-family:var(--fm);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;padding:4px 10px;border-radius:6px;}
 .card-tag-issue{background:var(--issue-tint);color:var(--issue);}
 .card-tag-tech{background:var(--tech-tint);color:var(--tech);}
 .card-tag-work{background:var(--work-tint);color:var(--work);}
-.card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;}
+.card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;color:var(--ink);}
 .card-body{display:flex;flex-direction:column;gap:10px;}
 .claim{font-size:16px;line-height:1.8;color:var(--ink);}
 .tag{display:inline-block;font-family:var(--fm);font-size:12px;font-weight:500;text-decoration:none;padding:2px 9px;border-radius:6px;white-space:nowrap;margin-left:2px;border-bottom:none;}
@@ -495,7 +539,7 @@ a{color:inherit;}
 .bar-issue{background:var(--issue);}.bar-tech{background:var(--tech);}.bar-work{background:var(--work);}
 .bar-pct{font-family:var(--fm);font-size:13.5px;font-weight:600;min-width:52px;text-align:right;}
 .deepdive{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;margin-bottom:24px;overflow:hidden;}
-.deepdive summary{list-style:none;cursor:pointer;padding:18px 26px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16px;}
+.deepdive summary{list-style:none;cursor:pointer;padding:18px 26px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16px;color:var(--ink);}
 .deepdive summary::-webkit-details-marker{display:none;}
 .dd-badge{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:6px;flex-shrink:0;}
 .dd-badge-issue{background:var(--issue);}.dd-badge-tech{background:var(--tech);}.dd-badge-work{background:var(--work);}
@@ -503,16 +547,16 @@ a{color:inherit;}
 .deepdive[open] .dd-chevron{transform:rotate(180deg);}
 .dd-body{padding:0 26px 22px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--divider);padding-top:16px;}
 .dd-body p{font-size:15.5px;line-height:1.85;color:var(--ink);}
-.insight{border-radius:16px;padding:22px 26px;margin-bottom:22px;display:flex;flex-direction:column;gap:10px;}
+.insight{border-radius:16px;padding:22px 26px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px;}
 .insight-label{font-family:var(--fm);font-size:11.5px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;width:fit-content;padding:4px 12px;border-radius:999px;}
-.insight p{font-family:var(--fd);font-size:18px;line-height:1.75;font-weight:700;text-wrap:balance;}
+.insight p{font-family:var(--fd);font-size:18px;line-height:1.75;font-weight:700;text-wrap:balance;color:var(--ink);}
 .insight-issue{background:var(--issue-tint);}
 .insight-issue .insight-label{background:var(--issue);color:#fff;}
 .insight-tech{background:var(--tech-tint);}
 .insight-tech .insight-label{background:var(--tech);color:#fff;}
 .insight-work{background:var(--work-tint);}
 .insight-work .insight-label{background:var(--work);color:#fff;}
-.chip-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px;}
+.chip-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px;}
 .chip{font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;}
 .chip-issue{background:var(--issue-tint);color:var(--issue);}
 .chip-tech{background:var(--tech-tint);color:var(--tech);}
@@ -522,12 +566,10 @@ a{color:inherit;}
 .cite-index ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
 .cite-index a{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);}
 .cite-index a:hover{color:var(--ink);}
-.editor{background:var(--hero-bg);color:var(--hero-fg);border-radius:20px;padding:44px 40px;margin-bottom:28px;}
-.editor-label{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--issue);margin-bottom:16px;}
-.editor p{font-family:var(--fd);font-size:19px;line-height:1.85;color:var(--hero-fg);text-wrap:balance;}
-.next{border:1.5px solid var(--work);background:var(--work-tint);border-radius:14px;padding:18px 24px;font-size:15px;line-height:1.7;}
-.next strong{font-weight:800;}
-.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.editor{background:var(--paper-sunken);border:1px solid var(--divider);border-top:4px solid var(--issue);border-radius:16px;padding:40px 40px;margin-bottom:28px;}
+.editor-label{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--issue);margin-bottom:16px;font-weight:600;}
+.editor p{font-family:var(--fd);font-size:19px;line-height:1.9;color:var(--ink);text-wrap:balance;}
+.footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
 .footer-brand{font-family:var(--fd);font-weight:700;font-size:17px;}
 .footer-meta{font-family:var(--fm);font-size:12px;color:var(--muted);text-align:right;line-height:1.7;}
 @media(max-width:680px){
@@ -538,26 +580,19 @@ a{color:inherit;}
   .pillar-head{align-items:flex-start;}
   .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
   .pdf-btn span{display:none;}
+  .timeline li{flex-direction:column;gap:4px;}
 }
-.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(20,24,31,.25);}
+.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
 .pdf-btn:hover{background:var(--issue);}
 .pdf-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
 @media print{
-  :root{
-    --paper:#FFFFFF; --paper-raised:#FFFFFF; --ink:#14181F; --muted:#5B6169; --divider:#CBCFCA;
-    --issue:#3B4C9E; --issue-tint:#E1E5F6; --issue-tint-strong:#CBD3F0;
-    --tech:#0E7C6B; --tech-tint:#D7F0E9; --tech-tint-strong:#BEE6D9;
-    --work:#B5651D; --work-tint:#F6E4CC; --work-tint-strong:#EFD3AA;
-    --hero-bg:#14181F; --hero-fg:#F6F7F5; --chip-bg:rgba(20,24,31,.06);
-  }
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{margin:14mm;}
   body{font-size:12.5px;}
   .no-print,.pdf-btn,.pillar-nav{display:none !important;}
   .wrap{max-width:none;padding:0;}
-  .hero,.editor{border-radius:0;}
   .pillar{margin-bottom:34px;page-break-inside:avoid;}
-  .card,.chart,.deepdive{page-break-inside:avoid;}
+  .card,.chart,.deepdive,.timeline{page-break-inside:avoid;}
   .deepdive .dd-chevron{display:none;}
   .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);}
   a{text-decoration:none;}
@@ -580,10 +615,9 @@ a{color:inherit;}
     <div class="editor-label">전체 리뷰</div>
     <p>${esc(data.overallReview)}</p>
   </section>
-  <div class="next"><strong>다음 호 예고</strong> — ${esc(data.nextIssue)}</div>
   <div class="footer">
     <div class="footer-brand">HR 트렌드 주간 보고서</div>
-    <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web Search + AI<br>${esc(data.meta?.date || DATE)}</div>
+    <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web + Video Search + AI<br>${esc(data.meta?.date || DATE)}</div>
   </div>
 </div>
 <button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
@@ -615,8 +649,7 @@ async function main() {
   console.log(`\n🚀 HR 트렌드 보고서 생성 시작`);
   console.log(`   Vol.${VOL} / ${DATE} / ${TOPIC}\n`);
 
-  // Step 1: 웹검색
-  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중 (최근 1~2주 우선, 균형 수집)...");
+  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중 (최근 1~2주 우선, 기사+영상, 균형 수집)...");
   searchDataGlobal = await withRetry(() => collectSearchData(), "웹검색");
   console.log("");
 
@@ -624,7 +657,6 @@ async function main() {
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  // Step 2A: 이슈 필러
   console.log("📋 Step 2A: meta·stats·이슈 필러 생성...");
   const partA = await generateJSON(PART_A_SYSTEM, "Part A (이슈)");
 
@@ -632,19 +664,16 @@ async function main() {
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  // Step 2B: 기술 필러
-  console.log("📋 Step 2B: 기술 필러 생성 (리스크 카드 포함)...");
+  console.log("📋 Step 2B: 기술 필러 생성 (타임라인·서브그룹·리스크 카드 포함)...");
   const partB = await generateJSON(PART_B_SYSTEM, "Part B (기술)");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  // Step 2C: 근무방식 필러 + 전체 리뷰
   console.log("📋 Step 2C: 근무방식 필러·전체 리뷰 생성...");
   const partC = await generateJSON(PART_C_SYSTEM, "Part C (근무방식)");
 
-  // 병합
   console.log("\n🔧 JSON 병합 중...");
   const merged = {
     meta: { ...(partA.meta || {}), vol: String(VOL), date: DATE },
@@ -655,12 +684,10 @@ async function main() {
       work: partC.pillar || null,
     },
     overallReview: partC.overallReview || "",
-    nextIssue: partC.nextIssue || "",
   };
   const pillarCount = Object.values(merged.pillars).filter(Boolean).length;
   console.log(`   📊 필러 ${pillarCount}/3개 · 통계 ${merged.stats.length}개`);
 
-  // HTML 저장
   const html = generateHTML(merged);
   fs.writeFileSync(path.join(process.cwd(), "index.html"), html, "utf-8");
   console.log(`\n✅ 완료! index.html 저장 (${html.length}자)`);
