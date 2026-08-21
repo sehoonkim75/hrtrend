@@ -1,5 +1,8 @@
 // scripts/generate-report.js
-// 구조: Step1 웹검색으로 실제 데이터 수집 → Step2 JSON 생성 → HTML 저장
+// 구조: Step1 웹검색(기사+영상)으로 실제 데이터 수집 → Step2 JSON 생성(3분할) → HTML 저장
+// v3: 화이트모드(눈이 덜 피로한 톤), 3개 축(이슈/기술/일하는 방식) 브리핑 레이아웃,
+//     기술 섹션은 서브그룹+타임라인으로 심화(최근 2주 데이터 우선), 문구 단위 출처 태깅
+//     (기사·유튜브 영상 모두 포함), 균형 톤, PDF 저장 버튼. '다음 호 예고'는 없음.
 
 const Anthropic = require("@anthropic-ai/sdk");
 const fs = require("fs");
@@ -24,11 +27,11 @@ function getKoreanDate() {
   return `${y}.${m}.${d} (${days[now.getDay()]})`;
 }
 
-const VOL  = getWeekNumber();
+const VOL = getWeekNumber();
 const DATE = getKoreanDate();
 const YEAR = new Date().getFullYear();
-const MON  = new Date().getMonth() + 1;
-const TOPIC = `${YEAR}년 ${MON}월 ${VOL}주차 채용 트렌드`;
+const MON = new Date().getMonth() + 1;
+const TOPIC = `${YEAR}년 ${MON}월 ${VOL}주차 HR 트렌드 (채용·평가·보상 / HR 기술 / 일하는 방식)`;
 
 // ─────────────────────────────────────────────────────────
 // 재시도 유틸
@@ -53,44 +56,72 @@ async function withRetry(fn, label) {
 }
 
 // ─────────────────────────────────────────────────────────
-// STEP 1: 웹검색 agentic loop → 원문 수집
+// STEP 1: 웹검색 agentic loop → 원문 수집 (기사 + 유튜브 영상)
 // ─────────────────────────────────────────────────────────
-const SEARCH_SYSTEM = `당신은 HR·채용 리서처입니다.
-web_search 툴을 5회 이상 사용해 이번 주 최신 한국 채용 트렌드 데이터를 수집하세요.
+const SEARCH_SYSTEM = `당신은 HR 리서처입니다.
+web_search 툴을 10회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
 
-검색 주제 (각각 1회 이상):
-1. 국내 기업 채용 공고 및 채용 계획 (이번 주)
-2. IT·AI 직군 채용 동향
-3. 주요 대기업/스타트업 채용 뉴스
-4. 글로벌 채용 트렌드
-5. HR 기술 트렌드 (AI 면접, 채용 플랫폼 등)
+출처 다양성 원칙 (중요):
+- 특정 매체·채널·블로그 하나에 지나치게 의존하지 마세요. 최종적으로 서로 다른 도메인(매체/기관) 8곳 이상에서 자료를 확보하는 것을 목표로 하세요.
+- 같은 주제라도 검색어를 바꿔가며 여러 매체를 교차 검색하세요 (예: 특정 블로그 1곳의 트렌드 글만으로 여러 섹션을 채우지 말 것).
+- 단순 뉴스 기사·웹문서만으로는 최신 트렌드를 따라가기 어려우므로, 반드시 유튜브 영상도 함께 검색하세요
+  (검색어에 "유튜브" 또는 "site:youtube.com"을 포함해 최소 2회 이상 검색).
+- 국내 이슈를 다룰 때는 반드시 정부·공공기관 발표 자료(고용노동부, 통계청, 한국노동연구원(KLI), KDI, 정책브리핑(korea.kr) 등)를 최소 2건 이상 확보하고, 민간 기업·컨설팅·언론의 분석과 나란히 놓아 비교할 수 있게 하세요 — 정부 발표 지표와 민간 시각이 다르게 해석될 수 있는 지점을 의식적으로 찾으세요.
+- HR 기술(AI) 관련 자료는 뉴스·기업 블로그에만 의존하지 말고, 학술 논문·연구도 최소 1~2건 검색하세요 (검색어 예: "AI hiring bias study", "algorithmic hiring research paper", "site:arxiv.org AI recruitment", 대학 연구소·학회·저널, 한국노동연구원·KDI 등 연구기관 리포트 등).
 
-수집 완료 후 아래 형식으로 요약하세요:
+검색 주제 (각각 1회 이상, 최근 1~2주 발생 이슈 우선):
+1. 국내 채용·평가·보상 이슈 (채용 트렌드, 임금 인상률, 성과급, 임금체계 개편)
+2. 글로벌 채용·보상 이슈 (해외 채용 동향, pay transparency, AI 채용 규제)
+3. HR 기술 도입 현황 — 최근 2주 이내 뉴스 우선 (AI 채용솔루션, AI 에이전트, HR테크 도입률)
+4. HR 기술의 리스크·반발 — 최근 2주 이내 뉴스 우선, 최소 2건 이상. 기술 도입에 대한 긍정적인 수치만 모으지 말고 비판·우려·반발 보도를 의식적으로 함께 찾을 것 (AI 편향, 오탈락, 노동계 반발, 감원 명분화 논란, 규제 이슈)
+5. HR·AI 관련 유튜브 영상 (국내외 채용/HR 전문가 리뷰, 뉴스 리포트, 컨퍼런스 영상) — 최소 2건
+6. HR·AI 관련 학술 연구·저널 (대학 연구소, 학회 논문, arXiv, 노동/경제 연구기관 리포트) — 최소 1~2건, 특히 AI 채용·평가의 공정성·편향·효과성을 다룬 연구 우선
+7. 국내 정부·공공기관 발표 (고용노동부, 통계청, 한국노동연구원, KDI, 정책브리핑 등 공식 통계·연구·정책) — 최소 2건
+8. 근무 방식·직무 변화 (주4.5일제, 하이브리드/원격근무, 리스킬링)
+9. 감원·구조조정 동향 (빅테크 감원, AI발 구조조정, 그 배경에 대한 회의적 시각 포함)
+10. HRD·교육개발 (리스킬링·업스킬링 우선순위, 기업 교육 예산, AI 교육/LXP 도입, 사내 교육 트렌드)
 
-## 수집된 채용 트렌드 데이터
+수집 완료 후 아래 형식으로 요약하세요. 각 항목에는 반드시 실제 검색된 제목, 출처명(매체명 또는 채널명·기관명), URL, 날짜(가능한 경우 YYYY.MM.DD)를 포함하고, 유튜브 영상은 항목 앞에 "[영상]"을, 학술 논문/연구기관 자료는 "[연구]"를, 정부·공공기관 발표는 "[공공]"을 붙이세요.
 
-### 국내 채용
+## 수집된 HR 트렌드 데이터
+
+### 국내 채용·평가·보상
 - 항목 (출처명, URL, 날짜)
 
-### IT·AI 직군
+### 글로벌 채용·보상
 - 항목 (출처명, URL, 날짜)
 
-### 주요 기업 채용 뉴스
+### HR 기술 도입 (최근 2주 우선)
 - 항목 (출처명, URL, 날짜)
 
-### 글로벌 트렌드
+### HR 기술 리스크·반발 (최근 2주 우선, 필수)
 - 항목 (출처명, URL, 날짜)
 
-### HR 기술
+### HR·AI 관련 유튜브 영상 (필수, [영상] 표시)
+- [영상] 항목 (채널명, URL, 게시일)
+
+### HR·AI 관련 학술 연구·저널 (필수, [연구] 표시)
+- [연구] 항목 (연구기관/저널명, URL, 발표일)
+
+### 국내 정부·공공기관 발표 (필수, [공공] 표시)
+- [공공] 항목 (부처/기관명, URL, 발표일)
+
+### 근무 방식·직무 변화
+- 항목 (출처명, URL, 날짜)
+
+### 감원·구조조정
+- 항목 (출처명, URL, 날짜)
+
+### HRD·교육개발
 - 항목 (출처명, URL, 날짜)
 
 출처 URL은 반드시 실제 검색된 URL만 기재하세요.`;
 
 async function collectSearchData() {
-  console.log("   web_search 시작...");
+  console.log("   web_search 시작 (기사 + 유튜브)...");
   const messages = [{
     role: "user",
-    content: `${TOPIC} 관련 최신 데이터를 web_search로 수집해주세요. 오늘 날짜: ${DATE}`,
+    content: `${TOPIC} 관련 최신 데이터를 web_search로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요. 특정 매체 하나에 몰리지 않도록 서로 다른 도메인 8곳 이상에서 수집하고, 국내 이슈는 정부·공공기관 발표를 최소 2건, HR 기술 관련은 학술 논문·연구기관 자료를 최소 1~2건 반드시 포함해주세요.`,
   }];
 
   let response = await withRetry(() =>
@@ -104,7 +135,7 @@ async function collectSearchData() {
   );
 
   let round = 0;
-  while (response.stop_reason === "tool_use" && round < 10) {
+  while (response.stop_reason === "tool_use" && round < 14) {
     round++;
     const toolUses = response.content.filter((b) => b.type === "tool_use");
     toolUses.forEach((t) => console.log(`   🔎 검색 [${round}]: "${t.input?.query || ""}"`));
@@ -143,136 +174,128 @@ async function collectSearchData() {
 }
 
 // ─────────────────────────────────────────────────────────
-// STEP 2A: 전반부 JSON 생성 (meta + stats + s01~s02)
+// 공통 JSON 스키마 규칙 (3개 파트 공용)
 // ─────────────────────────────────────────────────────────
-const PART_A_SYSTEM = `당신은 HR 보고서 JSON 생성기입니다.
+const COMMON_RULES = `당신은 HR 보고서 JSON 생성기입니다.
 제공된 실제 검색 데이터를 바탕으로 JSON만 출력하세요.
 마크다운 코드블록 없이 순수 JSON만 출력. 설명 문장 절대 금지.
 문자열 안에 줄바꿈 금지. 작은따옴표 금지. 역슬래시 금지.
-출처 URL은 검색 데이터에 있는 실제 URL만 사용하고 없으면 해당 기관 공식 홈페이지 URL 사용.
+출처 URL은 검색 데이터에 있는 실제 URL만 사용하고, 없으면 해당 자료가 실린 매체/채널의 공식 홈페이지 URL을 사용하세요.
+검색 데이터에 [영상] 표시가 있는 유튜브 항목, [연구] 표시가 있는 학술/연구기관 항목, [공공] 표시가 있는 정부·공공기관 항목이 있으면 관련 있는 claim에 적극적으로 srcUrl로 사용하세요 — 기사(웹문서)·영상·학술연구·공공발표를 균형 있게 섞어 쓰세요.
+같은 매체·채널의 출처를 여러 섹션·카드에 반복 사용하지 마세요. 특정 출처 하나가 전체 인용의 상당 비중을 차지하지 않도록, 서로 다른 srcName을 최대한 다양하게 쓰세요.
+국내 이슈(채용·보상·근무방식)를 다룰 때는 카드 안에 정부·공공기관 발표([공공] 표시) 출처를 최소 1개는 포함해 민간 기업·언론의 시각과 나란히 제시하세요 — 가능하면 두 시각이 다르게 해석되는 지점을 문장으로 드러내세요(예: "정부 발표로는 ~한 반면, 민간에서는 ~로 본다").
+HR 기술(tech) 관련 claims에는 학술 논문·연구기관 자료([연구] 표시) 출처를 최소 1개는 포함하세요.
+톤은 최대한 중립적으로 작성하세요 — 특히 기술(AI) 관련 내용은 도입·효율 등 긍정적 측면과 편향·반발·감원 명분화 등 우려되는 측면을 같은 비중으로 다루세요.
+claims(문구)는 반드시 검색 데이터에 있는 구체적 사실·수치 문장으로 작성하고, 그 문구 바로 옆에 실제로 그 내용을 다룬 자료의 srcName(매체/채널명 + 제목 요약)과 srcUrl을 붙이세요. 근거가 불확실한 문구는 만들지 마세요.
+insight(시사점) 필드는 claims를 바탕으로 한 편집자의 해석이므로 출처를 붙이지 않습니다.`;
+
+const CARD_SCHEMA = `{
+  "tag": "짧은 분류 태그",
+  "title": "카드 제목",
+  "claims": [
+    { "text": "구체적 사실 문장", "srcName": "매체/채널명 · 제목 요약", "srcUrl": "https://실제URL" }
+  ]
+}`;
+
+const PILLAR_TAIL_SCHEMA = `"insight": "이 섹션의 시사점 1~2문장(출처 불필요)",
+  "deepDive": { "title": "심층 제목", "paragraphs": [ { "text": "문단", "srcName": "매체명", "srcUrl": "https://실제URL" } ] },
+  "keywords": ["키워드1", "키워드2", "키워드3", "키워드4"]`;
+
+// ─────────────────────────────────────────────────────────
+// STEP 2A: meta + stats + pillar "issue" (채용·평가·보상)
+// ─────────────────────────────────────────────────────────
+const PART_A_SYSTEM = `${COMMON_RULES}
 
 출력 스키마:
 {
   "meta": {
-    "vol": "${VOL}",
-    "date": "${DATE}",
-    "headline": "이번 주 핵심 헤드라인 한 줄",
-    "subheadline": "핵심 요약 2문장"
+    "headline": "이번 보고서 헤드라인 한 줄(중립적 톤, 20자 내외로 짧게 — 긴 문장은 제목에서 단어가 어색하게 줄바꿈될 수 있으니 피할 것)",
+    "subheadline": "핵심 요약 2문장. 최근 1~2주 이슈를 다룬다는 점과, 기술 변화의 성과·우려를 함께 짚는다는 점을 포함"
   },
   "stats": [
-    { "num": "실제수치", "desc": "지표명", "change": "변화설명", "color": "red" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화설명", "color": "blue" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화설명", "color": "green" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화설명", "color": "gold" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화설명", "color": "red" }
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명(가능하면 날짜 포함)", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "tech" },
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "work" },
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
+    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "work" }
   ],
-  "sections": [
-    {
-      "id": "s01", "num": "01", "title": "국내 채용 트렌드", "icon": "🇰🇷",
-      "sourceCount": "출처 N개",
-      "overview": "3문장 개요",
-      "cards": [
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "red" },
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "blue" },
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "green" }
-      ],
-      "chartTitle": null, "chartData": [],
-      "expandItems": [
-        { "badge": "심층", "title": "확장 제목", "paragraphs": ["단락1", "단락2"], "color": "blue" }
-      ],
-      "callout": { "text": "핵심 시사점 한 문장", "color": "blue" },
-      "keywords": [
-        { "text": "키워드1", "style": "filled", "color": "red" },
-        { "text": "키워드2", "style": "outline", "color": "blue" }
-      ],
-      "sources": [
-        { "text": "기관명 보고서명", "url": "https://실제URL", "meta": "날짜" }
-      ]
-    },
-    {
-      "id": "s02", "num": "02", "title": "직군별 채용 동향", "icon": "📊",
-      "sourceCount": "출처 N개",
-      "overview": "3문장 개요",
-      "cards": [
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "green" },
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "gold" }
-      ],
-      "chartTitle": "직군별 채용 비중",
-      "chartData": [
-        { "label": "IT·개발", "value": 35, "color": "blue" },
-        { "label": "영업·마케팅", "value": 25, "color": "red" },
-        { "label": "제조·생산", "value": 20, "color": "green" },
-        { "label": "금융·회계", "value": 12, "color": "gold" },
-        { "label": "기타", "value": 8, "color": "blue" }
-      ],
-      "expandItems": [],
-      "callout": { "text": "핵심 시사점", "color": "gold" },
-      "keywords": [{ "text": "키워드", "style": "filled", "color": "blue" }],
-      "sources": [{ "text": "기관명", "url": "https://실제URL", "meta": "날짜" }]
-    }
-  ]
+  "pillar": {
+    "id": "issue", "color": "issue", "eyebrow": "PILLAR 01 · ISSUE BRIEFING", "icon": "🧭",
+    "title": "최근 1~2주 HR 이슈 — 채용·평가·보상",
+    "framing": "이 섹션을 관통하는 흐름 1~2문장",
+    "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+    ${PILLAR_TAIL_SCHEMA}
+  }
 }
 
-stats 정확히 5개, sections 정확히 2개(s01·s02)`;
+stats 정확히 5개(색상은 issue/tech/work/hrd 중에서 섞어서 배분 — 4가지 색을 고르게 쓸 것), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
+stats나 cards에 자연스럽게 넣을 수 있다면 유튜브 영상 출처를 1개 이상 포함하세요.`;
 
 // ─────────────────────────────────────────────────────────
-// STEP 2B: 후반부 JSON 생성 (s03~s05 + editorNote)
+// STEP 2B: pillar "tech" (HR 기술 변화 — 서브그룹+타임라인, 균형·최신성 필수)
 // ─────────────────────────────────────────────────────────
-const PART_B_SYSTEM = `당신은 HR 보고서 JSON 생성기입니다.
-제공된 실제 검색 데이터를 바탕으로 JSON만 출력하세요.
-마크다운 코드블록 없이 순수 JSON만 출력. 설명 문장 절대 금지.
-문자열 안에 줄바꿈 금지. 작은따옴표 금지. 역슬래시 금지.
-출처 URL은 검색 데이터에 있는 실제 URL만 사용하고 없으면 해당 기관 공식 홈페이지 URL 사용.
+const PART_B_SYSTEM = `${COMMON_RULES}
 
 출력 스키마:
 {
-  "sections": [
-    {
-      "id": "s03", "num": "03", "title": "이번 주 주요 공채", "icon": "📅",
-      "sourceCount": "출처 N개",
-      "overview": "3문장 개요",
-      "cards": [
-        { "tag": "기업명", "title": "채용 직군", "body": "2문장 내용", "color": "red" },
-        { "tag": "기업명", "title": "채용 직군", "body": "2문장 내용", "color": "blue" },
-        { "tag": "기업명", "title": "채용 직군", "body": "2문장 내용", "color": "green" }
-      ],
-      "chartTitle": null, "chartData": [], "expandItems": [],
-      "callout": { "text": "시사점", "color": "red" },
-      "keywords": [{ "text": "키워드", "style": "filled", "color": "red" }],
-      "sources": [{ "text": "기업명 채용공고", "url": "https://실제URL", "meta": "날짜" }]
+  "pillar": {
+    "id": "tech", "color": "tech", "eyebrow": "PILLAR 02 · TECH REVIEW", "icon": "🤖",
+    "title": "HR 기술 변화 리뷰",
+    "framing": "이 섹션은 최근 2주 발표 자료 중심이라는 점을 밝히는 1~2문장(중립적으로)",
+    "timeline": [
+      { "date": "MM.DD 형식", "text": "최근 2주 내 실제 사건/발표 한 문장", "srcName": "매체/채널명", "srcUrl": "https://실제URL" }
+    ],
+    "groups": [
+      { "label": "도입 · 자동화", "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}] },
+      { "label": "리스크 · 반발", "cards": [${CARD_SCHEMA}] },
+      { "label": "규제 · 거버넌스", "cards": [${CARD_SCHEMA}] }
+    ],
+    "chart": {
+      "title": "차트 제목",
+      "bars": [
+        { "label": "지표명", "value": 00, "srcName": "매체명", "srcUrl": "https://실제URL" }
+      ]
     },
-    {
-      "id": "s04", "num": "04", "title": "글로벌 채용 트렌드", "icon": "🌐",
-      "sourceCount": "출처 N개",
-      "overview": "3문장 개요",
-      "cards": [
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "blue" },
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "gold" }
-      ],
-      "chartTitle": null, "chartData": [], "expandItems": [],
-      "callout": { "text": "시사점", "color": "gold" },
-      "keywords": [{ "text": "키워드", "style": "outline", "color": "blue" }],
-      "sources": [{ "text": "기관명", "url": "https://실제URL", "meta": "날짜" }]
-    },
-    {
-      "id": "s05", "num": "05", "title": "AI·기술 트렌드", "icon": "🤖",
-      "sourceCount": "출처 N개",
-      "overview": "3문장 개요",
-      "cards": [
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "green" },
-        { "tag": "태그", "title": "소제목", "body": "2문장 내용", "color": "blue" }
-      ],
-      "chartTitle": null, "chartData": [], "expandItems": [],
-      "callout": { "text": "시사점", "color": "green" },
-      "keywords": [{ "text": "키워드", "style": "filled", "color": "green" }],
-      "sources": [{ "text": "기관명", "url": "https://실제URL", "meta": "날짜" }]
-    }
-  ],
-  "editorNote": "편집장 총평 3문장. 이번 주 채용 시장 핵심 시사점.",
-  "nextIssue": "다음 호 예고 한 문장"
+    ${PILLAR_TAIL_SCHEMA}
+  }
 }
 
-sections 정확히 3개(s03·s04·s05), editorNote·nextIssue 필수`;
+규칙:
+- timeline은 반드시 검색 데이터에서 날짜가 확인되는(가능한 최근 2주 이내) 항목 3~5개로 구성하세요. 날짜를 알 수 없는 항목은 timeline에 넣지 마세요.
+- groups는 정확히 3개("도입 · 자동화", "리스크 · 반발", "규제 · 거버넌스")이며, "리스크 · 반발" 그룹은 반드시 채워야 합니다(편향, 오탈락, 노동계 반발, 청년 고용 위축, 감원 명분화 비판 등).
+- claims 전체에서 최소 1개 이상은 유튜브 영상(srcUrl에 youtube.com 또는 youtu.be 포함) 출처를 사용하세요.
+- 긍정/우려 비중이 한쪽으로 치우치지 않게 하세요.
+- chart.bars는 3~4개, 없으면 빈 배열로.`;
+
+// ─────────────────────────────────────────────────────────
+// STEP 2C: pillar "work" + pillar "hrd" + overallReview
+// ─────────────────────────────────────────────────────────
+const PART_C_SYSTEM = `${COMMON_RULES}
+
+출력 스키마:
+{
+  "pillars": {
+    "work": {
+      "id": "work", "color": "work", "eyebrow": "PILLAR 03 · WORK REVIEW", "icon": "🧭",
+      "title": "직무 · 일하는 방식 변화 리뷰",
+      "framing": "이 섹션을 관통하는 흐름 1~2문장",
+      "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+      ${PILLAR_TAIL_SCHEMA}
+    },
+    "hrd": {
+      "id": "hrd", "color": "hrd", "eyebrow": "PILLAR 04 · HRD REVIEW", "icon": "🎓",
+      "title": "HRD · 교육개발 변화 리뷰",
+      "framing": "이 섹션을 관통하는 흐름 1~2문장 (교육 예산·리스킬링·AI 교육 등)",
+      "cards": [${CARD_SCHEMA}, ${CARD_SCHEMA}, ${CARD_SCHEMA}],
+      ${PILLAR_TAIL_SCHEMA}
+    }
+  },
+  "overallReview": "전체 리뷰 3~4문장. 반드시 '최근 1~2주' 기간을 명시하며 이슈·기술·근무방식·HRD 네 축을 요약하고, 기술 변화에 대해 성과와 우려를 함께 언급해 중립적 톤을 유지할 것. 도출된 시사점으로 마무리."
+}
+
+work 섹션 cards 중 최소 1개는 감원·구조조정·임금 불만 등 근무 변화의 부담이 되는 측면도 함께 다루세요.
+hrd 섹션은 리스킬링·업스킬링 우선순위, 기업 교육 예산 전망, AI 교육/LXP 도입 등 검색 데이터의 "HRD·교육개발" 항목을 바탕으로 작성하세요. deepDive는 없으면 null로 두세요.
+overallReview는 필수입니다. "다음 호 예고" 같은 필드는 만들지 마세요.`;
 
 // ─────────────────────────────────────────────────────────
 // JSON 파서 (5단계 fallback)
@@ -292,7 +315,7 @@ function parseJSON(raw) {
   } catch (_) {}
   try {
     return JSON.parse(s
-      .replace(/[\u2018\u2019\u201C\u201D]/g, "'")
+      .replace(/[‘’“”]/g, "'")
       .replace(/\\'/g, "'")
       .replace(/([^\\])\\([^"\\/bfnrtu])/g, "$1$2"));
   } catch (_) {}
@@ -300,201 +323,367 @@ function parseJSON(raw) {
   throw new Error("모든 파싱 시도 실패");
 }
 
-// ─────────────────────────────────────────────────────────
-// JSON → HTML 변환
-// ─────────────────────────────────────────────────────────
-function generateHTML(data) {
-  const colorHex = { red: "#c8421a", blue: "#1d3461", green: "#1a3a2a", gold: "#a07828" };
-  const hex = (c) => colorHex[c] || colorHex.blue;
+async function generateJSON(system, label) {
+  const text = await withRetry(() =>
+    client.messages.create({
+      model: "claude-sonnet-4-20250514",
+      max_tokens: 4000,
+      system,
+      messages: [{
+        role: "user",
+        content: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchDataGlobal}`,
+      }],
+    }).then((r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim()),
+    label
+  );
+  console.log(`   ✅ ${label} 완료 (${text.length}자)`);
+  try {
+    const parsed = parseJSON(text);
+    console.log(`   ✅ ${label} 파싱 성공`);
+    return parsed;
+  } catch (e) {
+    console.error(`   ⚠️ ${label} 파싱 실패: ${e.message}`);
+    return {};
+  }
+}
 
-  const statsHtml = (data.stats || []).map((s) =>
-    `<div class="stat-box">
-      <div class="num ${s.color !== "red" ? s.color || "" : ""}">${s.num || ""}</div>
-      <div class="desc">${s.desc || ""}</div>
-      <div class="change">${s.change || ""}</div>
+let searchDataGlobal = "";
+
+// ─────────────────────────────────────────────────────────
+// 렌더러 (JSON → HTML) — 화이트모드, 문구 단위 출처 태깅(기사·영상),
+// 기술 섹션 서브그룹+타임라인, PDF 저장, '다음 호 예고' 없음
+// ─────────────────────────────────────────────────────────
+function esc(s) { return s == null ? "" : String(s); }
+function isVideo(url) { return /youtube\.com|youtu\.be/i.test(url || ""); }
+
+function src(item) {
+  if (!item || !item.srcUrl) return null;
+  return { name: item.srcName || "출처", url: item.srcUrl };
+}
+
+function cite(s, color) {
+  if (!s) return "";
+  const icon = isVideo(s.url) ? "🎥" : "🔗";
+  return ` <a class="tag tag-${color}" href="${esc(s.url)}" target="_blank" rel="noopener">${icon} ${esc(s.name)}</a>`;
+}
+
+function renderClaims(claims, color) {
+  return (claims || []).map((c) => `<p class="claim">${esc(c.text)}${cite(src(c), color)}</p>`).join("");
+}
+
+function renderCards(cards, color) {
+  return (cards || []).map((c) => `
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-${color}">${esc(c.tag)}</span><h4>${esc(c.title)}</h4></div>
+      <div class="card-body">${renderClaims(c.claims, color)}</div>
+    </article>`).join("");
+}
+
+function renderGroups(groups, color) {
+  if (!groups) return "";
+  return groups.map((g) => `
+    <div class="group">
+      <div class="group-label">${esc(g.label)}</div>
+      <div class="card-stack">${renderCards(g.cards, color)}</div>
+    </div>`).join("");
+}
+
+function renderTimeline(items, color) {
+  if (!items || !items.length) return "";
+  return `
+    <div class="timeline">
+      <div class="timeline-title">이번 주 타임라인 · 최근 2주</div>
+      <ol>
+        ${items.map((t) => `
+          <li>
+            <span class="tl-date tl-${color}">${esc(t.date)}</span>
+            <span class="tl-text">${esc(t.text)}${cite(src(t), color)}</span>
+          </li>`).join("")}
+      </ol>
+    </div>`;
+}
+
+function renderChart(chart, color) {
+  if (!chart || !(chart.bars || []).length) return "";
+  return `
+    <div class="chart">
+      <div class="chart-title">${esc(chart.title)}</div>
+      ${chart.bars.map((b) => `
+        <div class="bar-row">
+          <div class="bar-top">
+            <span class="bar-lbl">${esc(b.label)}${cite(src(b), color)}</span>
+            <span class="bar-pct">${b.value}%</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill bar-${color}" style="width:${Math.min(Number(b.value) || 0, 100)}%"></div></div>
+        </div>`).join("")}
+    </div>`;
+}
+
+function renderDeepDive(dd, color) {
+  if (!dd || !dd.title) return "";
+  return `
+    <details class="deepdive">
+      <summary><span class="dd-badge dd-badge-${color}">심층</span>${esc(dd.title)}<span class="dd-chevron">▾</span></summary>
+      <div class="dd-body">
+        ${(dd.paragraphs || []).map((p) => `<p>${esc(p.text)}${cite(src(p), color)}</p>`).join("")}
+      </div>
+    </details>`;
+}
+
+function dedupeSources(p) {
+  const map = new Map();
+  const add = (s) => { if (s && !map.has(s.url)) map.set(s.url, s); };
+  (p.cards || []).forEach((c) => (c.claims || []).forEach((cl) => add(src(cl))));
+  (p.groups || []).forEach((g) => (g.cards || []).forEach((c) => (c.claims || []).forEach((cl) => add(src(cl)))));
+  (p.timeline || []).forEach((t) => add(src(t)));
+  ((p.chart || {}).bars || []).forEach((b) => add(src(b)));
+  ((p.deepDive || {}).paragraphs || []).forEach((pp) => add(src(pp)));
+  return [...map.values()];
+}
+
+function renderPillar(p) {
+  if (!p || !p.id) return "";
+  const cardsBlock = p.groups ? renderGroups(p.groups, p.color) : `<div class="card-stack">${renderCards(p.cards, p.color)}</div>`;
+  return `
+  <section class="pillar" id="${esc(p.id)}">
+    <header class="pillar-head pillar-head-${p.color}">
+      <span class="pillar-icon">${esc(p.icon)}</span>
+      <div>
+        <div class="pillar-eyebrow">${esc(p.eyebrow)}</div>
+        <h2>${esc(p.title)}</h2>
+      </div>
+    </header>
+    <p class="pillar-framing">${esc(p.framing)}</p>
+    ${renderTimeline(p.timeline, p.color)}
+    ${cardsBlock}
+    ${renderChart(p.chart, p.color)}
+    ${renderDeepDive(p.deepDive, p.color)}
+    <div class="insight insight-${p.color}">
+      <span class="insight-label">시사점</span>
+      <p>${esc(p.insight)}</p>
+    </div>
+    <div class="chip-row">${(p.keywords || []).map((k) => `<span class="chip chip-${p.color}">${esc(k)}</span>`).join("")}</div>
+    <div class="cite-index">
+      <div class="cite-index-label">이 섹션에서 인용한 자료</div>
+      <ul>${dedupeSources(p).map((s) => `<li>${isVideo(s.url) ? "🎥" : "🔗"} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
+    </div>
+  </section>`;
+}
+
+function generateHTML(data) {
+  const statsHtml = (data.stats || []).map((s) => `
+    <div class="stat">
+      <div class="stat-num stat-${s.color || "issue"}">${esc(s.num)}</div>
+      <div class="stat-desc">${esc(s.desc)}</div>
+      <div class="stat-change">${esc(s.change)}</div>
+      ${src(s) ? `<a class="stat-src" href="${esc(src(s).url)}" target="_blank" rel="noopener">${esc(src(s).name)} ↗</a>` : ""}
     </div>`).join("");
 
-  const tocHtml = (data.sections || []).map((s) =>
-    `<a href="#${s.id}"><span class="tn">${s.num}</span>${s.title}</a>`).join("");
-
-  const sectionsHtml = (data.sections || []).map((sec) => {
-    const cards = (sec.cards || []).map((c) =>
-      `<div class="card ${c.color !== "red" ? c.color || "" : ""}">
-        <div class="ctag">${c.tag || ""}</div>
-        <div class="ctitle">${c.title || ""}</div>
-        <div class="cbody">${c.body || ""}</div>
-      </div>`).join("");
-
-    const chart = (sec.chartData || []).length ? `
-      <div class="div-text"><span>${sec.chartTitle || ""}</span></div>
-      <div class="bar-wrap">
-        <div class="bar-label-top">${sec.chartTitle || ""}</div>
-        ${(sec.chartData || []).map((d) =>
-          `<div class="bar-row">
-            <div class="bar-lbl">${d.label}</div>
-            <div class="bar-track"><div class="bar-fill ${d.color !== "red" ? d.color || "" : ""}" style="width:${Math.min(Number(d.value) || 0, 100)}%"></div></div>
-            <div class="bar-pct">${d.value}%</div>
-          </div>`).join("")}
-      </div>` : "";
-
-    const expand = (sec.expandItems || []).map((e) =>
-      `<div class="xpand">
-        <button class="xbtn" onclick="toggle(this)">
-          <div class="xl"><span class="xb" style="background:${hex(e.color || "blue")}">${e.badge || ""}</span>${e.title || ""}</div>
-          <span class="xa">▼</span>
-        </button>
-        <div class="xcontent">${(e.paragraphs || []).map((p) => `<p>${p}</p>`).join("")}</div>
-      </div>`).join("");
-
-    const callout = sec.callout
-      ? `<div class="callout ${sec.callout.color !== "red" ? sec.callout.color || "" : ""}">${sec.callout.text || ""}</div>` : "";
-
-    const kw = (sec.keywords || []).length
-      ? `<div class="chip-row">${(sec.keywords || []).map((k) =>
-          `<span class="chip${k.style === "outline" ? " outline" : ""}${k.style !== "outline" && k.color !== "red" ? " " + (k.color || "") : ""}">${k.text}</span>`
-        ).join("")}</div>` : "";
-
-    const src = (sec.sources || []).length
-      ? `<div class="srcbox">
-          <div class="src-label">데이터 출처 ${sec.sourceCount ? "(" + sec.sourceCount + ")" : ""}</div>
-          <ul class="slist">
-            ${(sec.sources || []).map((s) =>
-              `<li>${s.url && s.url !== "https://실제URL"
-                ? `<a href="${s.url}" target="_blank">${s.text || ""}</a>`
-                : (s.text || "")}
-              ${s.meta ? `<span class="src-meta">${s.meta}</span>` : ""}</li>`
-            ).join("")}
-          </ul>
-        </div>` : "";
-
-    return `<div class="section" id="${sec.id}">
-      <div class="sec-header">
-        <span class="sec-num">${sec.num}</span>
-        <span class="sec-title">${sec.title}</span>
-        ${sec.sourceCount ? `<span class="src-count">${sec.sourceCount}</span>` : ""}
-        <span class="sec-icon">${sec.icon || ""}</span>
-      </div>
-      ${sec.overview ? `<div class="ov-box"><div class="ov-label">Overview</div><div class="ov-text">${sec.overview}</div></div>` : ""}
-      ${cards ? `<div class="card-grid">${cards}</div>` : ""}
-      ${chart}${expand}${callout}${kw}${src}
-    </div>`;
-  }).join("");
+  const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work, data.pillars?.hrd].filter(Boolean);
+  const navHtml = pillars.map((p) => `<a class="nav-pill nav-pill-${p.color}" href="#${esc(p.id)}"><span>${esc(p.icon)}</span>${esc((p.title || "").split(" — ").pop().split(" · ").pop())}</a>`).join("");
+  const pillarsHtml = pillars.map(renderPillar).join("");
 
   return `<!DOCTYPE html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>채용 트렌드 주간 보고서 | ${YEAR} Vol.${data.meta?.vol || VOL}</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>HR 트렌드 주간 보고서 | ${YEAR} Vol.${data.meta?.vol || VOL}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0f0e0d;--cream:#f4f1eb;--ww:#faf8f4;--red:#c8421a;--red-lt:#f4d5c9;--blue:#1d3461;--blue-lt:#d0dbed;--muted:#7a7570;--div:#d9d4cc;--green:#1a3a2a;--green-lt:#d4e8dc;--gold:#a07828;--gold-lt:#f2e8cc;--fb:"Noto Sans KR",sans-serif;--fs:"Noto Serif KR",serif;--fm:"IBM Plex Mono",monospace;}
+:root{
+  --paper:#FAFAF8; --paper-raised:#FFFFFF; --paper-sunken:#F1F1EC; --ink:#24272C; --muted:#666B72; --divider:#E4E5E1;
+  --issue:#45529A; --issue-tint:#ECEEF9; --issue-tint-strong:#D8DCF2;
+  --tech:#12816E; --tech-tint:#E2F3EE; --tech-tint-strong:#C7E9DF;
+  --work:#A9631E; --work-tint:#FBEEDC; --work-tint-strong:#F3DCB8;
+  --hrd:#7C5295; --hrd-tint:#F0E9F5; --hrd-tint-strong:#E1D0EA;
+  --chip-bg:#EFEFEB;
+  --fd:"Gowun Batang",serif; --fb:"Gothic A1",sans-serif; --fm:"IBM Plex Mono",monospace;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--cream);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.8;max-width:960px;margin:0 auto;padding:52px 40px 100px;}
-.mh{border-top:5px solid var(--ink);border-bottom:1px solid var(--ink);padding:22px 0 18px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;}
-.mh .vol{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
-.mh .mt{font-family:var(--fs);font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1.1;}
-.pill{display:inline-block;background:var(--red);color:#fff;font-family:var(--fm);font-size:9px;letter-spacing:2px;padding:3px 11px;text-transform:uppercase;margin-top:10px;}
-.mhr{text-align:right;padding-bottom:4px;}
-.mhr .date{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;color:var(--muted);display:block;}
-.hero{background:var(--ink);color:var(--cream);padding:26px 32px;position:relative;overflow:hidden;}
-.hero::after{content:"채용";position:absolute;right:-8px;top:-18px;font-size:120px;font-weight:900;color:rgba(255,255,255,0.04);line-height:1;pointer-events:none;}
-.hero .lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:10px;}
-.hero .hl{font-size:19px;font-weight:700;line-height:1.5;margin-bottom:10px;}
-.hero .sub{font-size:12.5px;color:rgba(244,241,235,.75);line-height:1.75;}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--div);border:1px solid var(--div);margin-bottom:36px;}
-.stat-box{background:var(--ww);padding:18px 12px;text-align:center;}
-.stat-box .num{font-family:var(--fs);font-size:26px;font-weight:700;color:var(--red);line-height:1;margin-bottom:5px;}
-.stat-box .num.blue{color:var(--blue);}.stat-box .num.green{color:var(--green);}.stat-box .num.gold{color:var(--gold);}
-.stat-box .desc{font-size:10.5px;color:var(--muted);line-height:1.5;}
-.stat-box .change{font-family:var(--fm);font-size:9px;color:var(--green);margin-top:3px;}
-.toc{border:1px solid var(--div);background:#edeae4;padding:18px 22px;margin-bottom:44px;display:grid;grid-template-columns:1fr 1fr;gap:3px 28px;}
-.toc-h{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;grid-column:1/-1;}
-.toc a{font-size:12.5px;color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:8px;padding:3px 0;border-bottom:1px dotted var(--div);}
-.toc a:hover{color:var(--red);}.toc a .tn{font-family:var(--fm);font-size:9px;color:var(--red);min-width:20px;}
-.section{margin-bottom:58px;scroll-margin-top:16px;}
-.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:2.5px solid var(--ink);}
-.sec-num{font-family:var(--fm);font-size:9.5px;background:var(--ink);color:var(--cream);padding:2px 8px;letter-spacing:1px;}
-.sec-title{font-family:var(--fs);font-size:20px;font-weight:700;}
-.sec-icon{margin-left:auto;font-size:20px;}
-.src-count{font-family:var(--fm);font-size:9px;color:var(--gold);border:1px solid var(--gold);padding:2px 8px;letter-spacing:1px;}
-.ov-box{background:var(--green);color:#fff;padding:22px 28px;margin-bottom:18px;}
-.ov-label{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--green-lt);text-transform:uppercase;margin-bottom:10px;}
-.ov-text{font-size:13.5px;line-height:1.8;}
-.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
-.card{background:var(--ww);border:1px solid var(--div);border-left:3px solid var(--red);padding:16px 18px;}
-.card.blue{border-left-color:var(--blue);}.card.green{border-left-color:var(--green);}.card.gold{border-left-color:var(--gold);}
-.ctag{font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-.ctitle{font-size:14px;font-weight:700;margin-bottom:7px;line-height:1.4;}
-.cbody{font-size:12.5px;color:#3d3a35;line-height:1.75;}
-.xpand{margin-bottom:12px;}
-.xbtn{width:100%;background:var(--ww);border:1px solid var(--div);border-left:3px solid var(--blue);padding:12px 18px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ink);}
-.xbtn .xl{display:flex;align-items:center;gap:10px;}
-.xb{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:#fff;padding:2px 8px;text-transform:uppercase;flex-shrink:0;}
-.xa{font-size:11px;color:var(--muted);transition:transform .2s;}
-.xbtn.open .xa{transform:rotate(180deg);}
-.xcontent{display:none;background:#edeae4;border:1px solid var(--div);border-top:none;border-left:3px solid var(--blue);padding:18px 22px;}
-.xcontent.open{display:block;}
-.xcontent p{font-size:13px;line-height:1.8;margin-bottom:10px;color:#3a3730;}
-.bar-wrap{background:var(--ww);border:1px solid var(--div);padding:18px 22px;margin:14px 0;}
-.bar-label-top{font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
-.bar-lbl{font-size:11.5px;color:var(--muted);min-width:130px;text-align:right;flex-shrink:0;}
-.bar-track{flex:1;background:var(--div);height:9px;overflow:hidden;}
-.bar-fill{height:100%;background:var(--red);}
-.bar-fill.blue{background:var(--blue);}.bar-fill.green{background:var(--green);}.bar-fill.gold{background:var(--gold);}
-.bar-pct{font-family:var(--fm);font-size:11px;min-width:50px;}
-.callout{border:1px solid var(--red);background:var(--red-lt);padding:13px 18px;margin:14px 0;font-size:13px;line-height:1.75;}
-.callout.blue{border-color:var(--blue);background:var(--blue-lt);}.callout.gold{border-color:var(--gold);background:var(--gold-lt);}.callout.green{border-color:var(--green);background:var(--green-lt);}
-.chip-row{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0;}
-.chip{background:var(--ink);color:var(--cream);font-size:11.5px;padding:3px 12px;}
-.chip.outline{background:transparent;border:1px solid var(--ink);color:var(--ink);}
-.chip.blue{background:var(--blue);}.chip.green{background:var(--green);}.chip.gold{background:var(--gold);}
-.div-text{display:flex;align-items:center;gap:12px;margin:20px 0;}
-.div-text::before,.div-text::after{content:"";flex:1;height:1px;background:var(--div);}
-.div-text span{font-family:var(--fm);font-size:9.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.srcbox{margin-top:22px;padding:14px 20px;background:#e8e4de;border-top:2px solid var(--div);}
-.src-label{font-family:var(--fm);font-size:8.5px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.slist{list-style:none;}
-.slist li{font-size:11px;color:#555;line-height:1.65;padding:3px 0 3px 17px;position:relative;border-bottom:1px dotted #cec9c1;}
-.slist li:last-child{border-bottom:none;}
-.slist li::before{content:"↗";position:absolute;left:0;color:var(--red);font-size:10px;top:4px;}
-.slist a{color:#555;text-decoration:none;border-bottom:1px dotted #aaa;}
-.slist a:hover{color:var(--red);}
-.src-meta{font-family:var(--fm);font-size:9px;color:var(--muted);background:#d9d4cc;padding:1px 6px;margin-left:7px;}
-.ed-box{background:var(--green);color:#fff;padding:22px 28px;margin-bottom:18px;}
-.ed-lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--green-lt);text-transform:uppercase;margin-bottom:10px;}
-.ed-txt{font-size:13.5px;line-height:1.8;}
-.next{border:1px solid var(--gold);background:var(--gold-lt);padding:13px 18px;margin:14px 0;font-size:13px;}
-.footer{margin-top:70px;padding-top:18px;border-top:2.5px solid var(--ink);display:flex;justify-content:space-between;align-items:center;}
-.footer-brand{font-family:var(--fs);font-size:16px;font-weight:700;}
-.footer-meta{font-family:var(--fm);font-size:9.5px;color:var(--muted);text-align:right;line-height:1.8;}
-@media(max-width:680px){body{padding:24px 18px 60px;}.stats{grid-template-columns:repeat(3,1fr);}.card-grid,.mh{grid-template-columns:1fr;}.toc{grid-template-columns:1fr;}}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:17px;line-height:1.75;font-feature-settings:"tnum" 1;word-break:keep-all;overflow-wrap:break-word;}
+.wrap{max-width:820px;margin:0 auto;padding:56px 24px 120px;}
+a{color:inherit;}
+::selection{background:var(--issue-tint-strong);}
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:40px;flex-wrap:wrap;}
+.brand{font-family:var(--fm);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.issue-tag{font-family:var(--fm);font-size:13px;letter-spacing:1px;color:var(--ink);background:var(--chip-bg);padding:6px 14px;border-radius:999px;}
+.hero{background:var(--issue-tint);border:1px solid var(--issue-tint-strong);border-top:4px solid var(--issue);color:var(--ink);border-radius:16px;padding:44px 40px;margin-bottom:44px;}
+.hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);margin-bottom:18px;font-weight:600;}
+.hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.3;text-wrap:balance;margin-bottom:20px;color:var(--ink);}
+.hero p{font-size:17.5px;line-height:1.85;color:#41454C;max-width:64ch;}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.stat{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
+.stat-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
+.stat-issue{color:var(--issue);}.stat-tech{color:var(--tech);}.stat-work{color:var(--work);}.stat-hrd{color:var(--hrd);}
+.stat-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+.stat-change{font-family:var(--fm);font-size:11.5px;color:var(--muted);}
+.stat-src{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);margin-top:2px;width:fit-content;}
+.stat-src:hover{color:var(--ink);}
+.pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
+.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);}
+.nav-pill span{font-size:18px;}
+.nav-pill-issue{border-color:var(--issue);color:var(--issue);}
+.nav-pill-tech{border-color:var(--tech);color:var(--tech);}
+.nav-pill-work{border-color:var(--work);color:var(--work);}
+.nav-pill-hrd{border-color:var(--hrd);color:var(--hrd);}
+.pillar{margin-bottom:76px;scroll-margin-top:24px;}
+.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
+.pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
+.pillar-eyebrow{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;color:var(--ink);}
+.pillar-head-issue .pillar-eyebrow{color:var(--issue);}
+.pillar-head-tech .pillar-eyebrow{color:var(--tech);}
+.pillar-head-work .pillar-eyebrow{color:var(--work);}
+.pillar-head-hrd .pillar-eyebrow{color:var(--hrd);}
+.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;max-width:66ch;}
+.timeline{background:var(--paper-sunken);border:1px solid var(--divider);border-radius:16px;padding:22px 26px;margin-bottom:24px;}
+.timeline-title{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
+.timeline ol{list-style:none;display:flex;flex-direction:column;gap:12px;}
+.timeline li{display:flex;gap:14px;align-items:baseline;}
+.tl-date{font-family:var(--fm);font-size:12.5px;font-weight:700;padding:2px 9px;border-radius:6px;flex-shrink:0;white-space:nowrap;}
+.tl-issue{background:var(--issue-tint-strong);color:var(--issue);}
+.tl-tech{background:var(--tech-tint-strong);color:var(--tech);}
+.tl-work{background:var(--work-tint-strong);color:var(--work);}
+.tl-hrd{background:var(--hrd-tint-strong);color:var(--hrd);}
+.tl-text{font-size:15px;line-height:1.7;color:var(--ink);}
+.group{margin-bottom:22px;}
+.group-label{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px;border-left:3px solid var(--divider);}
+.card-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:8px;}
+.card{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;}
+.card-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.card-tag{font-family:var(--fm);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;padding:4px 10px;border-radius:6px;}
+.card-tag-issue{background:var(--issue-tint);color:var(--issue);}
+.card-tag-tech{background:var(--tech-tint);color:var(--tech);}
+.card-tag-work{background:var(--work-tint);color:var(--work);}
+.card-tag-hrd{background:var(--hrd-tint);color:var(--hrd);}
+.card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;color:var(--ink);}
+.card-body{display:flex;flex-direction:column;gap:10px;}
+.claim{font-size:16px;line-height:1.8;color:var(--ink);}
+.tag{display:inline-block;font-family:var(--fm);font-size:12px;font-weight:500;text-decoration:none;padding:2px 9px;border-radius:6px;white-space:nowrap;margin-left:2px;border-bottom:none;}
+.tag-issue{background:var(--issue-tint);color:var(--issue);}
+.tag-tech{background:var(--tech-tint);color:var(--tech);}
+.tag-work{background:var(--work-tint);color:var(--work);}
+.tag-hrd{background:var(--hrd-tint);color:var(--hrd);}
+.tag:hover{background:var(--issue-tint-strong);}
+.tag-tech:hover{background:var(--tech-tint-strong);}
+.tag-work:hover{background:var(--work-tint-strong);}
+.tag-hrd:hover{background:var(--hrd-tint-strong);}
+.chart{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;margin-bottom:24px;}
+.chart-title{font-family:var(--fm);font-size:12.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
+.bar-row{margin-bottom:20px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-top{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin-bottom:9px;flex-wrap:wrap;}
+.bar-lbl{font-size:14.5px;color:var(--muted);line-height:1.6;}
+.bar-track{width:100%;background:var(--chip-bg);height:11px;border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;}
+.bar-issue{background:var(--issue);}.bar-tech{background:var(--tech);}.bar-work{background:var(--work);}.bar-hrd{background:var(--hrd);}
+.bar-pct{font-family:var(--fm);font-size:14.5px;font-weight:700;color:var(--ink);flex-shrink:0;}
+.deepdive{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;margin-bottom:24px;overflow:hidden;}
+.deepdive summary{list-style:none;cursor:pointer;padding:18px 26px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16px;color:var(--ink);}
+.deepdive summary::-webkit-details-marker{display:none;}
+.dd-badge{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:6px;flex-shrink:0;}
+.dd-badge-issue{background:var(--issue);}.dd-badge-tech{background:var(--tech);}.dd-badge-work{background:var(--work);}.dd-badge-hrd{background:var(--hrd);}
+.dd-chevron{margin-left:auto;color:var(--muted);transition:transform .2s;font-size:14px;}
+.deepdive[open] .dd-chevron{transform:rotate(180deg);}
+.dd-body{padding:0 26px 22px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--divider);padding-top:16px;}
+.dd-body p{font-size:15.5px;line-height:1.85;color:var(--ink);}
+.insight{border-radius:16px;padding:22px 26px;margin-bottom:16px;display:flex;flex-direction:column;gap:10px;}
+.insight-label{font-family:var(--fm);font-size:11.5px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;width:fit-content;padding:4px 12px;border-radius:999px;}
+.insight p{font-family:var(--fd);font-size:18px;line-height:1.75;font-weight:700;text-wrap:balance;color:var(--ink);}
+.insight-issue{background:var(--issue-tint);}
+.insight-issue .insight-label{background:var(--issue);color:#fff;}
+.insight-tech{background:var(--tech-tint);}
+.insight-tech .insight-label{background:var(--tech);color:#fff;}
+.insight-work{background:var(--work-tint);}
+.insight-hrd{background:var(--hrd-tint);}
+.insight-work .insight-label{background:var(--work);color:#fff;}
+.insight-hrd .insight-label{background:var(--hrd);color:#fff;}
+.chip-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:16px;}
+.chip{font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;}
+.chip-issue{background:var(--issue-tint);color:var(--issue);}
+.chip-tech{background:var(--tech-tint);color:var(--tech);}
+.chip-work{background:var(--work-tint);color:var(--work);}
+.chip-hrd{background:var(--hrd-tint);color:var(--hrd);}
+.cite-index{border-top:1px dashed var(--divider);padding-top:16px;}
+.cite-index-label{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.cite-index ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.cite-index a{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);}
+.cite-index a:hover{color:var(--ink);}
+.editor{background:var(--paper-sunken);border:1px solid var(--divider);border-top:4px solid var(--issue);border-radius:16px;padding:40px 40px;margin-bottom:28px;}
+.editor-label{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--issue);margin-bottom:16px;font-weight:600;}
+.editor p{font-family:var(--fd);font-size:19px;line-height:1.9;color:var(--ink);text-wrap:balance;}
+.footer{margin-top:44px;padding-top:24px;border-top:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.footer-brand{font-family:var(--fd);font-weight:700;font-size:17px;}
+.footer-meta{font-family:var(--fm);font-size:12px;color:var(--muted);text-align:right;line-height:1.7;}
+@media(max-width:680px){
+  .wrap{padding:32px 18px 90px;}
+  .hero{padding:32px 24px;border-radius:16px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .pillar-head{align-items:flex-start;}
+  .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
+  .pdf-btn span{display:none;}
+  .timeline li{flex-direction:column;gap:4px;}
+}
+.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
+.pdf-btn:hover{background:var(--issue);}
+.pdf-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
+@media print{
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+  @page{margin:14mm;}
+  body{font-size:12.5px;orphans:3;widows:3;word-break:keep-all;overflow-wrap:break-word;}
+  .no-print,.pdf-btn,.pillar-nav{display:none !important;}
+  .wrap{max-width:none;padding:0;}
+  .pillar{margin-bottom:34px;break-inside:auto;}
+  .pillar-head{break-after:avoid;page-break-after:avoid;}
+  .card,.chart,.deepdive,.timeline,.stat,.insight{break-inside:avoid;page-break-inside:avoid;}
+  .card-body,.dd-body{break-inside:avoid;page-break-inside:avoid;}
+  .deepdive .dd-chevron{display:none;}
+  .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);word-break:break-all;}
+  a{text-decoration:none;}
+}
 </style></head><body>
-<div class="mh">
-  <div>
-    <div class="vol">채용 트렌드 리포트 · Vol.${data.meta?.vol || VOL} · ${YEAR}</div>
-    <div class="mt">채용 트렌드<br>주간 보고서</div>
-    <span class="pill">Web Search + AI</span>
+<div class="wrap">
+  <div class="masthead">
+    <span class="brand">HR 트렌드 주간 보고서</span>
+    <span class="issue-tag">Vol.${esc(data.meta?.vol || VOL)} · ${esc(data.meta?.date || DATE)}</span>
   </div>
-  <div class="mhr"><span class="date">${data.meta?.date || DATE}</span></div>
+  <div class="hero">
+    <div class="hero-eyebrow">이번 주 핵심 메시지</div>
+    <h1>${esc(data.meta?.headline)}</h1>
+    <p>${esc(data.meta?.subheadline)}</p>
+  </div>
+  <div class="stats">${statsHtml}</div>
+  <nav class="pillar-nav">${navHtml}</nav>
+  ${pillarsHtml}
+  <section class="editor" id="review">
+    <div class="editor-label">전체 리뷰</div>
+    <p>${esc(data.overallReview)}</p>
+  </section>
+  <div class="footer">
+    <div class="footer-brand">HR 트렌드 주간 보고서</div>
+    <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web + Video Search + AI<br>${esc(data.meta?.date || DATE)}</div>
+  </div>
 </div>
-<div class="hero">
-  <div class="lbl">이번 주 핵심 메시지</div>
-  <div class="hl">${data.meta?.headline || ""}</div>
-  <div class="sub">${data.meta?.subheadline || ""}</div>
-</div>
-<div class="stats">${statsHtml}</div>
-<div class="toc"><div class="toc-h">목차 · Table of Contents</div>${tocHtml}</div>
-${sectionsHtml}
-<div class="section" id="s-ed">
-  <div class="sec-header"><span class="sec-num">ED</span><span class="sec-title">편집장 총평</span><span class="sec-icon">📝</span></div>
-  <div class="ed-box"><div class="ed-lbl">Editor Note</div><div class="ed-txt">${data.editorNote || ""}</div></div>
-  ${data.nextIssue ? `<div class="next"><strong>다음 호 예고</strong> — ${data.nextIssue}</div>` : ""}
-</div>
-<div class="footer">
-  <div class="footer-brand">채용 트렌드 주간 보고서</div>
-  <div class="footer-meta">${YEAR} Vol.${data.meta?.vol || VOL} · Web Search + AI<br>${data.meta?.date || DATE}</div>
-</div>
-<script>function toggle(b){b.classList.toggle("open");b.nextElementSibling.classList.toggle("open");}</script>
+<button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+  <span>PDF로 저장</span>
+</button>
+<script>
+(function(){
+  window.addEventListener("beforeprint", function(){
+    document.querySelectorAll("details").forEach(function(d){
+      d.dataset.wasOpen = d.open ? "1" : "0";
+      d.open = true;
+    });
+  });
+  window.addEventListener("afterprint", function(){
+    document.querySelectorAll("details").forEach(function(d){
+      d.open = d.dataset.wasOpen === "1";
+    });
+  });
+})();
+</script>
 </body></html>`;
 }
 
@@ -505,78 +694,57 @@ async function main() {
   console.log(`\n🚀 HR 트렌드 보고서 생성 시작`);
   console.log(`   Vol.${VOL} / ${DATE} / ${TOPIC}\n`);
 
-  // Step 1: 웹검색
-  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중...");
-  const searchData = await withRetry(() => collectSearchData(), "웹검색");
+  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중 (최근 1~2주 우선, 기사+영상, 균형 수집)...");
+  searchDataGlobal = await withRetry(() => collectSearchData(), "웹검색");
   console.log("");
 
-  // 토큰 분당 한도 초과 방지 — 65초 대기
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  // Step 2A: 전반부 JSON
-  console.log("📋 Step 2A: 전반부 JSON 생성 (meta·stats·s01~02)...");
-  const textA = await withRetry(() =>
-    client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      system: PART_A_SYSTEM,
-      messages: [{
-        role: "user",
-        content: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchData}`,
-      }],
-    }).then((r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim()),
-    "전반부 JSON"
-  );
-  console.log(`   ✅ 전반부 완료 (${textA.length}자)`);
+  console.log("📋 Step 2A: meta·stats·이슈 필러 생성...");
+  const partA = await generateJSON(PART_A_SYSTEM, "Part A (이슈)");
 
-  // 전반부·후반부 사이 대기
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
   await sleep(65000);
   console.log("   ✅ 대기 완료\n");
 
-  // Step 2B: 후반부 JSON
-  console.log("📋 Step 2B: 후반부 JSON 생성 (s03~05·총평)...");
-  const textB = await withRetry(() =>
-    client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      system: PART_B_SYSTEM,
-      messages: [{
-        role: "user",
-        content: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchData}`,
-      }],
-    }).then((r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim()),
-    "후반부 JSON"
-  );
-  console.log(`   ✅ 후반부 완료 (${textB.length}자)`);
+  console.log("📋 Step 2B: 기술 필러 생성 (타임라인·서브그룹·리스크 카드 포함)...");
+  const partB = await generateJSON(PART_B_SYSTEM, "Part B (기술)");
 
-  // 파싱 & 병합
+  console.log("⏸  Rate limit 방지 대기 중 (65초)...");
+  await sleep(65000);
+  console.log("   ✅ 대기 완료\n");
+
+  console.log("📋 Step 2C: 근무방식·HRD 필러·전체 리뷰 생성...");
+  const partC = await generateJSON(PART_C_SYSTEM, "Part C (근무방식·HRD)");
+
   console.log("\n🔧 JSON 병합 중...");
-  let parsedA, parsedB;
-  try { parsedA = parseJSON(textA); console.log("   ✅ 전반부 파싱 성공"); }
-  catch (e) { console.error(`   ⚠️ 전반부 파싱 실패: ${e.message}`); parsedA = { meta: {}, stats: [], sections: [] }; }
-  try { parsedB = parseJSON(textB); console.log("   ✅ 후반부 파싱 성공"); }
-  catch (e) { console.error(`   ⚠️ 후반부 파싱 실패: ${e.message}`); parsedB = { sections: [], editorNote: "", nextIssue: "" }; }
-
   const merged = {
-    meta: { ...parsedA.meta, vol: String(VOL), date: DATE },
-    stats: parsedA.stats || [],
-    sections: [...(parsedA.sections || []), ...(parsedB.sections || [])],
-    editorNote: parsedB.editorNote || "",
-    nextIssue: parsedB.nextIssue || "",
+    meta: { ...(partA.meta || {}), vol: String(VOL), date: DATE },
+    stats: partA.stats || [],
+    pillars: {
+      issue: partA.pillar || null,
+      tech: partB.pillar || null,
+      work: partC.pillars?.work || null,
+      hrd: partC.pillars?.hrd || null,
+    },
+    overallReview: partC.overallReview || "",
   };
-  console.log(`   📊 섹션 ${merged.sections.length}개 · 통계 ${merged.stats.length}개`);
+  const pillarCount = Object.values(merged.pillars).filter(Boolean).length;
+  console.log(`   📊 필러 ${pillarCount}/4개 · 통계 ${merged.stats.length}개`);
 
-  // HTML 저장
   const html = generateHTML(merged);
   fs.writeFileSync(path.join(process.cwd(), "index.html"), html, "utf-8");
   console.log(`\n✅ 완료! index.html 저장 (${html.length}자)`);
   console.log(`   👉 https://sehoonkim75.github.io/hrtrend\n`);
 }
 
-main().catch((err) => {
-  console.error("\n❌ 오류:", err.message);
-  process.exit(1);
-});
+if (require.main === module) {
+  main().catch((err) => {
+    console.error("\n❌ 오류:", err.message);
+    process.exit(1);
+  });
+}
+
+module.exports = { generateHTML, parseJSON };
