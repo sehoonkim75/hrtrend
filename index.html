@@ -2,267 +2,362 @@
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>HR 트렌드 주간 보고서 | 2026 Vol.34</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Noto+Serif+KR:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-:root{--ink:#0f0e0d;--cream:#f4f1eb;--ww:#faf8f4;--red:#c8421a;--red-lt:#f4d5c9;--blue:#1d3461;--blue-lt:#d0dbed;--muted:#7a7570;--div:#d9d4cc;--green:#1a3a2a;--green-lt:#d4e8dc;--gold:#a07828;--gold-lt:#f2e8cc;--fb:"Noto Sans KR",sans-serif;--fs:"Noto Serif KR",serif;--fm:"IBM Plex Mono",monospace;}
+:root{
+  --paper:#F6F7F5; --paper-raised:#FFFFFF; --ink:#14181F; --muted:#5B6169; --divider:#DCDFDA;
+  --issue:#3B4C9E; --issue-tint:#E1E5F6; --issue-tint-strong:#CBD3F0;
+  --tech:#0E7C6B; --tech-tint:#D7F0E9; --tech-tint-strong:#BEE6D9;
+  --work:#B5651D; --work-tint:#F6E4CC; --work-tint-strong:#EFD3AA;
+  --hero-bg:#14181F; --hero-fg:#F6F7F5; --chip-bg:rgba(20,24,31,.06);
+  --fd:"Gowun Batang",serif; --fb:"Gothic A1",sans-serif; --fm:"IBM Plex Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14171B; --paper-raised:#1B1F24; --ink:#ECEDEC; --muted:#9AA0A6; --divider:#2C3036;
+    --issue:#8C9EEB; --issue-tint:rgba(140,158,235,.14); --issue-tint-strong:rgba(140,158,235,.24);
+    --tech:#4FD6BC; --tech-tint:rgba(79,214,188,.14); --tech-tint-strong:rgba(79,214,188,.24);
+    --work:#E3A15B; --work-tint:rgba(227,161,91,.14); --work-tint-strong:rgba(227,161,91,.24);
+    --hero-bg:#0B0D10; --hero-fg:#F2F3F1; --chip-bg:rgba(255,255,255,.07);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14171B; --paper-raised:#1B1F24; --ink:#ECEDEC; --muted:#9AA0A6; --divider:#2C3036;
+  --issue:#8C9EEB; --issue-tint:rgba(140,158,235,.14); --issue-tint-strong:rgba(140,158,235,.24);
+  --tech:#4FD6BC; --tech-tint:rgba(79,214,188,.14); --tech-tint-strong:rgba(79,214,188,.24);
+  --work:#E3A15B; --work-tint:rgba(227,161,91,.14); --work-tint-strong:rgba(227,161,91,.24);
+  --hero-bg:#0B0D10; --hero-fg:#F2F3F1; --chip-bg:rgba(255,255,255,.07);
+}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{background:var(--cream);color:var(--ink);font-family:var(--fb);font-size:14px;line-height:1.8;max-width:960px;margin:0 auto;padding:52px 40px 100px;}
-.mh{border-top:5px solid var(--ink);border-bottom:1px solid var(--ink);padding:22px 0 18px;display:grid;grid-template-columns:1fr auto;align-items:end;gap:24px;}
-.mh .vol{font-family:var(--fm);font-size:9px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:8px;}
-.mh .mt{font-family:var(--fs);font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1.1;}
-.pill{display:inline-block;background:var(--red);color:#fff;font-family:var(--fm);font-size:9px;letter-spacing:2px;padding:3px 11px;text-transform:uppercase;margin-top:10px;}
-.mhr{text-align:right;padding-bottom:4px;}
-.mhr .date{font-family:var(--fm);font-size:10px;letter-spacing:1.5px;color:var(--muted);display:block;}
-.hero{background:var(--ink);color:var(--cream);padding:26px 32px;position:relative;overflow:hidden;}
-.hero::after{content:"HR";position:absolute;right:-8px;top:-18px;font-size:120px;font-weight:900;color:rgba(255,255,255,0.04);line-height:1;pointer-events:none;}
-.hero .lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--red);text-transform:uppercase;margin-bottom:10px;}
-.hero .hl{font-size:19px;font-weight:700;line-height:1.5;margin-bottom:10px;}
-.hero .sub{font-size:12.5px;color:rgba(244,241,235,.75);line-height:1.75;}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--div);border:1px solid var(--div);margin-bottom:36px;}
-.stat-box{background:var(--ww);padding:18px 12px;text-align:center;}
-.stat-box .num{font-family:var(--fs);font-size:26px;font-weight:700;color:var(--red);line-height:1;margin-bottom:5px;}
-.stat-box .num.blue{color:var(--blue);}.stat-box .num.green{color:var(--green);}.stat-box .num.gold{color:var(--gold);}
-.stat-box .desc{font-size:10.5px;color:var(--muted);line-height:1.5;}
-.stat-box .change{font-family:var(--fm);font-size:9px;color:var(--green);margin-top:3px;}
-.toc{border:1px solid var(--div);background:#edeae4;padding:18px 22px;margin-bottom:44px;display:grid;grid-template-columns:1fr 1fr;gap:3px 28px;}
-.toc-h{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:12px;grid-column:1/-1;}
-.toc a{font-size:12.5px;color:var(--ink);text-decoration:none;display:flex;align-items:baseline;gap:8px;padding:3px 0;border-bottom:1px dotted var(--div);}
-.toc a:hover{color:var(--red);}.toc a .tn{font-family:var(--fm);font-size:9px;color:var(--red);min-width:20px;}
-.section{margin-bottom:58px;scroll-margin-top:16px;}
-.sec-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:12px;border-bottom:2.5px solid var(--ink);}
-.sec-num{font-family:var(--fm);font-size:9.5px;background:var(--ink);color:var(--cream);padding:2px 8px;letter-spacing:1px;}
-.sec-title{font-family:var(--fs);font-size:20px;font-weight:700;}
-.sec-icon{margin-left:auto;font-size:20px;}
-.src-count{font-family:var(--fm);font-size:9px;color:var(--gold);border:1px solid var(--gold);padding:2px 8px;letter-spacing:1px;}
-.ov-box{background:var(--green);color:#fff;padding:22px 28px;margin-bottom:18px;}
-.ov-label{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--green-lt);text-transform:uppercase;margin-bottom:10px;}
-.ov-text{font-size:13.5px;line-height:1.8;}
-.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;}
-.card{background:var(--ww);border:1px solid var(--div);border-left:3px solid var(--red);padding:16px 18px;}
-.card.blue{border-left-color:var(--blue);}.card.green{border-left-color:var(--green);}.card.gold{border-left-color:var(--gold);}
-.ctag{font-family:var(--fm);font-size:9.5px;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;margin-bottom:6px;}
-.ctitle{font-size:14px;font-weight:700;margin-bottom:7px;line-height:1.4;}
-.cbody{font-size:12.5px;color:#3d3a35;line-height:1.75;}
-.xpand{margin-bottom:12px;}
-.xbtn{width:100%;background:var(--ww);border:1px solid var(--div);border-left:3px solid var(--blue);padding:12px 18px;text-align:left;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;font-family:var(--fb);font-size:13px;font-weight:700;color:var(--ink);}
-.xbtn .xl{display:flex;align-items:center;gap:10px;}
-.xb{font-family:var(--fm);font-size:9px;letter-spacing:1.5px;color:#fff;padding:2px 8px;text-transform:uppercase;flex-shrink:0;}
-.xa{font-size:11px;color:var(--muted);transition:transform .2s;}
-.xbtn.open .xa{transform:rotate(180deg);}
-.xcontent{display:none;background:#edeae4;border:1px solid var(--div);border-top:none;border-left:3px solid var(--blue);padding:18px 22px;}
-.xcontent.open{display:block;}
-.xcontent p{font-size:13px;line-height:1.8;margin-bottom:10px;color:#3a3730;}
-.bar-wrap{background:var(--ww);border:1px solid var(--div);padding:18px 22px;margin:14px 0;}
-.bar-label-top{font-family:var(--fm);font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:16px;}
-.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
-.bar-lbl{font-size:11.5px;color:var(--muted);min-width:130px;text-align:right;flex-shrink:0;}
-.bar-track{flex:1;background:var(--div);height:9px;overflow:hidden;}
-.bar-fill{height:100%;background:var(--red);}
-.bar-fill.blue{background:var(--blue);}.bar-fill.green{background:var(--green);}.bar-fill.gold{background:var(--gold);}
-.bar-pct{font-family:var(--fm);font-size:11px;min-width:50px;}
-.callout{border:1px solid var(--red);background:var(--red-lt);padding:13px 18px;margin:14px 0;font-size:13px;line-height:1.75;}
-.callout.blue{border-color:var(--blue);background:var(--blue-lt);}.callout.gold{border-color:var(--gold);background:var(--gold-lt);}.callout.green{border-color:var(--green);background:var(--green-lt);}
-.chip-row{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0;}
-.chip{background:var(--ink);color:var(--cream);font-size:11.5px;padding:3px 12px;}
-.chip.outline{background:transparent;border:1px solid var(--ink);color:var(--ink);}
-.chip.blue{background:var(--blue);}.chip.green{background:var(--green);}.chip.gold{background:var(--gold);}
-.div-text{display:flex;align-items:center;gap:12px;margin:20px 0;}
-.div-text::before,.div-text::after{content:"";flex:1;height:1px;background:var(--div);}
-.div-text span{font-family:var(--fm);font-size:9.5px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;}
-.srcbox{margin-top:22px;padding:14px 20px;background:#e8e4de;border-top:2px solid var(--div);}
-.src-label{font-family:var(--fm);font-size:8.5px;letter-spacing:2.5px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;}
-.slist{list-style:none;}
-.slist li{font-size:11px;color:#555;line-height:1.65;padding:3px 0 3px 17px;position:relative;border-bottom:1px dotted #cec9c1;}
-.slist li:last-child{border-bottom:none;}
-.slist li::before{content:"↗";position:absolute;left:0;color:var(--red);font-size:10px;top:4px;}
-.slist a{color:#555;text-decoration:none;border-bottom:1px dotted #aaa;}
-.slist a:hover{color:var(--red);}
-.src-meta{font-family:var(--fm);font-size:9px;color:var(--muted);background:#d9d4cc;padding:1px 6px;margin-left:7px;}
-.ed-box{background:var(--green);color:#fff;padding:22px 28px;margin-bottom:18px;}
-.ed-lbl{font-family:var(--fm);font-size:9px;letter-spacing:3px;color:var(--green-lt);text-transform:uppercase;margin-bottom:10px;}
-.ed-txt{font-size:13.5px;line-height:1.8;}
-.next{border:1px solid var(--gold);background:var(--gold-lt);padding:13px 18px;margin:14px 0;font-size:13px;}
-.footer{margin-top:70px;padding-top:18px;border-top:2.5px solid var(--ink);display:flex;justify-content:space-between;align-items:center;}
-.footer-brand{font-family:var(--fs);font-size:16px;font-weight:700;}
-.footer-meta{font-family:var(--fm);font-size:9.5px;color:var(--muted);text-align:right;line-height:1.8;}
-@media(max-width:680px){body{padding:24px 18px 60px;}.stats{grid-template-columns:repeat(3,1fr);}.card-grid,.mh{grid-template-columns:1fr;}.toc{grid-template-columns:1fr;}}
+html{-webkit-text-size-adjust:100%;}
+body{background:var(--paper);color:var(--ink);font-family:var(--fb);font-size:17px;line-height:1.75;font-feature-settings:"tnum" 1;}
+.wrap{max-width:820px;margin:0 auto;padding:56px 24px 120px;}
+a{color:inherit;}
+::selection{background:var(--issue-tint-strong);}
+
+/* ── Masthead ── */
+.masthead{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:40px;flex-wrap:wrap;}
+.brand{font-family:var(--fm);font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.issue-tag{font-family:var(--fm);font-size:13px;letter-spacing:1px;color:var(--ink);background:var(--chip-bg);padding:6px 14px;border-radius:999px;}
+
+/* ── Hero ── */
+.hero{background:var(--hero-bg);color:var(--hero-fg);border-radius:20px;padding:48px 40px;margin-bottom:44px;}
+.hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);opacity:.95;margin-bottom:18px;}
+.hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(32px,5vw,50px);line-height:1.25;text-wrap:balance;margin-bottom:20px;}
+.hero p{font-size:18px;line-height:1.8;color:rgba(246,247,245,.82);max-width:64ch;}
+
+/* ── Stats ── */
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
+.stat{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
+.stat-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
+.stat-issue{color:var(--issue);}.stat-tech{color:var(--tech);}.stat-work{color:var(--work);}
+.stat-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+.stat-change{font-family:var(--fm);font-size:11.5px;color:var(--muted);}
+.stat-src{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);margin-top:2px;width:fit-content;}
+.stat-src:hover{color:var(--ink);}
+
+/* ── Pillar nav ── */
+.pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
+.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);}
+.nav-pill span{font-size:18px;}
+.nav-pill-issue{border-color:var(--issue);color:var(--issue);}
+.nav-pill-tech{border-color:var(--tech);color:var(--tech);}
+.nav-pill-work{border-color:var(--work);color:var(--work);}
+
+/* ── Pillar section ── */
+.pillar{margin-bottom:76px;scroll-margin-top:24px;}
+.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
+.pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
+.pillar-eyebrow{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
+.pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;}
+.pillar-head-issue .pillar-eyebrow{color:var(--issue);}
+.pillar-head-tech .pillar-eyebrow{color:var(--tech);}
+.pillar-head-work .pillar-eyebrow{color:var(--work);}
+.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:28px;max-width:66ch;}
+
+.card-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:24px;}
+.card{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;}
+.card-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
+.card-tag{font-family:var(--fm);font-size:12px;letter-spacing:1.5px;text-transform:uppercase;font-weight:600;padding:4px 10px;border-radius:6px;}
+.card-tag-issue{background:var(--issue-tint);color:var(--issue);}
+.card-tag-tech{background:var(--tech-tint);color:var(--tech);}
+.card-tag-work{background:var(--work-tint);color:var(--work);}
+.card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;}
+.card-body{display:flex;flex-direction:column;gap:10px;}
+.claim{font-size:16px;line-height:1.8;color:var(--ink);}
+.tag{display:inline-block;font-family:var(--fm);font-size:12px;font-weight:500;text-decoration:none;padding:2px 9px;border-radius:6px;white-space:nowrap;margin-left:2px;border-bottom:none;}
+.tag-issue{background:var(--issue-tint);color:var(--issue);}
+.tag-tech{background:var(--tech-tint);color:var(--tech);}
+.tag-work{background:var(--work-tint);color:var(--work);}
+.tag:hover{background:var(--issue-tint-strong);}
+.tag-tech:hover{background:var(--tech-tint-strong);}
+.tag-work:hover{background:var(--work-tint-strong);}
+
+/* ── Chart ── */
+.chart{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;margin-bottom:24px;}
+.chart-title{font-family:var(--fm);font-size:12.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:20px;}
+.bar-row{display:flex;align-items:center;gap:14px;margin-bottom:16px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-lbl{font-size:14px;color:var(--muted);min-width:150px;max-width:220px;text-align:right;flex-shrink:0;line-height:1.5;}
+.bar-track{flex:1;background:var(--chip-bg);height:12px;border-radius:6px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:6px;}
+.bar-issue{background:var(--issue);}.bar-tech{background:var(--tech);}.bar-work{background:var(--work);}
+.bar-pct{font-family:var(--fm);font-size:13.5px;font-weight:600;min-width:52px;text-align:right;}
+
+/* ── Deep dive ── */
+.deepdive{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;margin-bottom:24px;overflow:hidden;}
+.deepdive summary{list-style:none;cursor:pointer;padding:18px 26px;display:flex;align-items:center;gap:12px;font-weight:800;font-size:16px;}
+.deepdive summary::-webkit-details-marker{display:none;}
+.dd-badge{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:#fff;padding:3px 10px;border-radius:6px;flex-shrink:0;}
+.dd-badge-issue{background:var(--issue);}.dd-badge-tech{background:var(--tech);}.dd-badge-work{background:var(--work);}
+.dd-chevron{margin-left:auto;color:var(--muted);transition:transform .2s;font-size:14px;}
+.deepdive[open] .dd-chevron{transform:rotate(180deg);}
+.dd-body{padding:0 26px 22px;display:flex;flex-direction:column;gap:12px;border-top:1px solid var(--divider);padding-top:16px;}
+.dd-body p{font-size:15.5px;line-height:1.85;color:var(--ink);}
+
+/* ── Insight (시사점) ── */
+.insight{border-radius:16px;padding:22px 26px;margin-bottom:22px;display:flex;flex-direction:column;gap:10px;}
+.insight-label{font-family:var(--fm);font-size:11.5px;letter-spacing:2.5px;text-transform:uppercase;font-weight:700;width:fit-content;padding:4px 12px;border-radius:999px;}
+.insight p{font-family:var(--fd);font-size:18px;line-height:1.75;font-weight:700;text-wrap:balance;}
+.insight-issue{background:var(--issue-tint);}
+.insight-issue .insight-label{background:var(--issue);color:#fff;}
+.insight-tech{background:var(--tech-tint);}
+.insight-tech .insight-label{background:var(--tech);color:#fff;}
+.insight-work{background:var(--work-tint);}
+.insight-work .insight-label{background:var(--work);color:#fff;}
+
+/* ── Chips ── */
+.chip-row{display:flex;flex-wrap:wrap;gap:9px;margin-bottom:20px;}
+.chip{font-family:var(--fb);font-weight:600;font-size:14px;padding:7px 16px;border-radius:999px;}
+.chip-issue{background:var(--issue-tint);color:var(--issue);}
+.chip-tech{background:var(--tech-tint);color:var(--tech);}
+.chip-work{background:var(--work-tint);color:var(--work);}
+
+/* ── Cite index ── */
+.cite-index{border-top:1px dashed var(--divider);padding-top:16px;}
+.cite-index-label{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.cite-index ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
+.cite-index a{font-size:13px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);}
+.cite-index a:hover{color:var(--ink);}
+
+/* ── Editor note ── */
+.editor{background:var(--hero-bg);color:var(--hero-fg);border-radius:20px;padding:44px 40px;margin-bottom:28px;}
+.editor-label{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--issue);margin-bottom:16px;}
+.editor p{font-family:var(--fd);font-size:19px;line-height:1.85;color:var(--hero-fg);text-wrap:balance;}
+.next{border:1.5px solid var(--work);background:var(--work-tint);border-radius:14px;padding:18px 24px;font-size:15px;line-height:1.7;}
+.next strong{font-weight:800;}
+
+/* ── Footer ── */
+.footer{margin-top:64px;padding-top:24px;border-top:1px solid var(--divider);display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;}
+.footer-brand{font-family:var(--fd);font-weight:700;font-size:17px;}
+.footer-meta{font-family:var(--fm);font-size:12px;color:var(--muted);text-align:right;line-height:1.7;}
+
+@media(max-width:680px){
+  .wrap{padding:32px 18px 90px;}
+  .hero{padding:32px 24px;border-radius:16px;}
+  .stats{grid-template-columns:repeat(2,1fr);}
+  .bar-lbl{min-width:100px;max-width:120px;font-size:12.5px;}
+  .pillar-head{align-items:flex-start;}
+}
 </style></head><body>
-<div class="mh">
-  <div>
-    <div class="vol">HR 트렌드 리포트 · Vol.34 · 2026</div>
-    <div class="mt">HR 트렌드<br>주간 보고서</div>
-    <span class="pill">Web Search + AI</span>
+<div class="wrap">
+  <div class="masthead">
+    <span class="brand">HR 트렌드 주간 보고서</span>
+    <span class="issue-tag">Vol.34 · 2026.08.21 (금)</span>
   </div>
-  <div class="mhr"><span class="date">2026.08.21 (금)</span></div>
-</div>
-<div class="hero">
-  <div class="lbl">이번 주 핵심 메시지</div>
-  <div class="hl">AI가 채용·평가·보상의 기준을 다시 쓴다 — '많이'가 아니라 '맞게' 뽑고 증명하는 한 주</div>
-  <div class="sub">국내는 팀핏·롱테일 채용과 임금 공정성 논쟁이, 글로벌은 빅테크 감원과 AI 규제 시한이 동시에 맞물리고 있다. HR은 기술 도입 속도만큼 재교육·공정성 설계에도 균형 있게 투자해야 하는 국면에 들어섰다.</div>
-</div>
-<div class="stats"><div class="stat-box">
-      <div class="num blue">86.7%</div>
-      <div class="desc">국내 500대 기업 인사업무 AI 활용률</div>
-      <div class="change">확산 가속</div>
-    </div><div class="stat-box">
-      <div class="num ">51.2%</div>
-      <div class="desc">경력직 다이렉트소싱 비중</div>
-      <div class="change">정규직 신입공고 급감과 대조</div>
-    </div><div class="stat-box">
-      <div class="num gold">14만+</div>
-      <div class="desc">2026년 美 빅테크 누적 감원(명)</div>
-      <div class="change">AI 인프라 투자와 병행</div>
-    </div><div class="stat-box">
-      <div class="num green">224개</div>
-      <div class="desc">상반기 주4.5일제 도입 기업(국내)</div>
-      <div class="change">정부 연간 목표 조기 달성</div>
-    </div><div class="stat-box">
-      <div class="num blue">7,800만</div>
-      <div class="desc">WEF 2030 글로벌 순증 일자리 전망</div>
-      <div class="change">9,200만 대체·1억7,000만 창출</div>
+
+  <div class="hero">
+    <div class="hero-eyebrow">이번 주 핵심 메시지</div>
+    <h1>AI가 채용·평가·보상의 기준을 다시 쓴다</h1>
+    <p>"많이 뽑는" 채용에서 "맞게 뽑고 증명하는" 채용으로 — 이번 주 국내외 HR 이슈, 기술 변화, 일하는 방식의 변화를 3개 축으로 정리했다.</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num stat-issue">86.7%</div>
+      <div class="stat-desc">국내 500대 기업 인사업무 AI 활용률</div>
+      <div class="stat-change">확산 가속</div>
+      <a class="stat-src" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a>
+    </div>
+    <div class="stat">
+      <div class="stat-num stat-tech">51.2%</div>
+      <div class="stat-desc">경력직 다이렉트소싱 비중</div>
+      <div class="stat-change">신입 공고는 2.6%뿐</div>
+      <a class="stat-src" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a>
+    </div>
+    <div class="stat">
+      <div class="stat-num stat-work">14만+</div>
+      <div class="stat-desc">美 빅테크 2026년 누적 감원(명)</div>
+      <div class="stat-change">AI 인프라 투자와 병행</div>
+      <a class="stat-src" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원 ↗</a>
+    </div>
+    <div class="stat">
+      <div class="stat-num stat-issue">224개</div>
+      <div class="stat-desc">상반기 주4.5일제 도입 기업(국내)</div>
+      <div class="stat-change">정부 연간 목표 조기 달성</div>
+      <a class="stat-src" href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입 ↗</a>
+    </div>
+    <div class="stat">
+      <div class="stat-num stat-work">7,800만</div>
+      <div class="stat-desc">WEF 2030 글로벌 순증 일자리 전망</div>
+      <div class="stat-change">9,200만 대체·1억7,000만 창출</div>
+      <a class="stat-src" href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics ↗</a>
     </div></div>
-<div class="toc"><div class="toc-h">목차 · Table of Contents</div><a href="#s01"><span class="tn">01</span>국내외 채용·평가·보상 핵심 이슈</a><a href="#s02"><span class="tn">02</span>HR 기술 변화 리뷰 — AI가 채용·평가의 표준이 되다</a><a href="#s03"><span class="tn">03</span>직무·일하는 방식 변화 리뷰</a></div>
-<div class="section" id="s01">
-      <div class="sec-header">
-        <span class="sec-num">01</span>
-        <span class="sec-title">국내외 채용·평가·보상 핵심 이슈</span>
-        <span class="src-count">출처 6개</span>
-        <span class="sec-icon">🌍</span>
+
+  <nav class="pillar-nav"><a class="nav-pill nav-pill-issue" href="#issue"><span>🧭</span>이번 주 HR 이슈</a><a class="nav-pill nav-pill-tech" href="#tech"><span>🤖</span>HR 기술 변화 리뷰</a><a class="nav-pill nav-pill-work" href="#work"><span>🧭</span>일하는 방식 변화 리뷰</a></nav>
+
+  
+  <section class="pillar" id="issue">
+    <header class="pillar-head pillar-head-issue">
+      <span class="pillar-icon">🧭</span>
+      <div>
+        <div class="pillar-eyebrow">PILLAR 01 · ISSUE BRIEFING</div>
+        <h2>이번 주 HR 이슈 — 채용·평가·보상</h2>
       </div>
-      <div class="ov-box"><div class="ov-label">Overview</div><div class="ov-text">채용은 대규모 정기공채 대신 팀핏에 맞는 인재를 소수·수시로 뽑는 롱테일 채용으로 무게중심이 옮겨가고 있다. 보상 영역에서는 임금 공정성·투명성이 다시 1순위 과제로 떠올랐고, 대기업과 중소기업의 임금 인상률 격차는 성과급 차이를 중심으로 벌어지고 있다. 평가·규제 측면에서는 AI 채용·평가에 대한 고지·차별금지 기준이 국내외에서 동시에 정교해지는 중이다.</div></div>
-      <div class="card-grid"><div class="card ">
-        <div class="ctag">채용</div>
-        <div class="ctitle">팀핏·롱테일 채용으로 무게중심 이동</div>
-        <div class="cbody">정규직 공고는 2년 새 64% 급감해 비중이 50%까지 낮아졌고, 하반기 채용 계획 기업의 78.9%가 10명 이하 소수 채용을 계획했다. 4~7년차 경력직 집중 채용과 팀 협업 방식까지 따지는 팀핏 평가가 새로운 기준으로 자리잡고 있다.</div>
-      </div><div class="card blue">
-        <div class="ctag">보상</div>
-        <div class="ctitle">임금 공정성이 다시 1순위 과제로</div>
-        <div class="cbody">2025년 상반기 대기업(300인 이상) 임금은 5.7% 오른 반면 중소기업(300인 미만)은 2.7% 인상에 그쳐 격차의 핵심은 성과급 등 특별급여였다. 국내 기업들은 보상체계 공정성 강화와 직원경험(EX) 혁신을 인력 확보의 가장 기본적인 대응책으로 다시 점검하고 있다.</div>
-      </div><div class="card gold">
-        <div class="ctag">평가·규제</div>
-        <div class="ctitle">AI 채용·평가 규제가 현실화 단계로</div>
-        <div class="cbody">EU AI Act는 채용·평가를 포함한 직장 내 AI 활용 대부분을 고위험으로 분류해 2026년 8월 준수 시한이 임박했고, 국내에서도 채용절차법 개정을 통해 AI 채용의 사전고지·차별방지 기준을 정비하는 논의가 이어지고 있다.</div>
-      </div></div>
-      <div class="xpand">
-        <button class="xbtn" onclick="toggle(this)">
-          <div class="xl"><span class="xb" style="background:#1d3461">심층</span>임금체계, 연공서열에서 성과·유연 구조로</div>
-          <span class="xa">▼</span>
-        </button>
-        <div class="xcontent"><p>완성차 업계를 중심으로 근로시간 단축과 맞물려 기존 시급제·수당중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다. 연장·야간수당 등 시간 기반 수당 대신 일정한 월급을 지급하는 방식으로 재편될 가능성이 거론된다.</p><p>전문가들은 근로시간 단축이 임금 삭감으로 이어지지 않도록 설계하는 것이 노사 갈등을 막는 핵심이라고 지적한다. 성과급 역시 회사 실적과 연동해 잘 됐을 때 나누는 배분형 구조로 자리잡아 가고 있어, 고정급 개편과 성과 연동 보상을 함께 설계하는 것이 다음 국면의 과제로 꼽힌다.</p></div>
-      </div><div class="callout blue">채용은 '많이'에서 '맞게'로, 보상은 '공정하게 보이는 것'에서 '공정함을 증명하는 것'으로 무게중심이 이동하고 있다.</div><div class="chip-row"><span class="chip">팀핏</span><span class="chip outline">롱테일 채용</span><span class="chip blue">임금 공정성</span><span class="chip outline">성과급 격차</span><span class="chip gold">AI 채용 규제</span></div><div class="srcbox">
-          <div class="src-label">데이터 출처 (출처 6개)</div>
-          <ul class="slist">
-            <li><a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank">SearchRight, 2026 하반기 채용 트렌드 총정리</a>
-              <span class="src-meta">2026.08</span></li><li><a href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank">Korea Business Review, 채용 데이터로 짚어본 2026년 하반기 채용시장 흐름</a>
-              <span class="src-meta">2026.08.12</span></li><li><a href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank">Korea Business Review, 연봉 인상률과 체감 임금의 간극</a>
-              <span class="src-meta">2026.06.22</span></li><li><a href="https://www.carrotglobalblog.com/2026-domestic-company-global-hr-status-debriefing-part-3-tasks-250806/" target="_blank">Carrot Global, 2026 국내기업 글로벌 HR 현황 디브리핑 Part3</a>
-              <span class="src-meta">2026.08.06</span></li><li><a href="https://ravio.com/blog/everything-you-need-to-know-about-the-eu-pay-transparency-directive" target="_blank">Ravio, EU Pay Transparency Directive 가이드</a>
-              <span class="src-meta">2026</span></li><li><a href="https://www.roberthalf.com/us/en/insights/research/data-reveals-which-hr-roles-are-in-highest-demand" target="_blank">Robert Half, 2026 HR Job Market: In-demand Roles & Hiring Trends</a>
-              <span class="src-meta">2026</span></li>
-          </ul>
-        </div>
-    </div><div class="section" id="s02">
-      <div class="sec-header">
-        <span class="sec-num">02</span>
-        <span class="sec-title">HR 기술 변화 리뷰 — AI가 채용·평가의 표준이 되다</span>
-        <span class="src-count">출처 5개</span>
-        <span class="sec-icon">🤖</span>
+    </header>
+    <p class="pillar-framing">채용은 '팀핏' 중심의 소수·수시 채용으로, 보상은 공정성 증명 경쟁으로, 평가는 AI 규제 대응으로 동시에 재편되고 있다.</p>
+    <div class="card-stack">
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-issue">채용</span><h4>팀핏·롱테일 채용으로 무게중심 이동</h4></div>
+      <div class="card-body"><p class="claim">정규직 공고는 2년 새 64% 급감해 비중이 50%까지 낮아졌다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">Korea Business Review · 하반기 채용시장 흐름 ↗</a></p><p class="claim">하반기 채용 계획 기업의 78.9%가 10명 이하 소수 채용을 계획했다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">Korea Business Review · 하반기 채용시장 흐름 ↗</a></p><p class="claim">집중 채용 연차는 4~7년차에 몰렸고, 신입 전용 공고는 2.6%에 그쳤다. <a class="tag tag-issue" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-issue">보상</span><h4>임금 공정성이 다시 1순위 과제로</h4></div>
+      <div class="card-body"><p class="claim">2025년 상반기 대기업(300인 이상) 임금은 5.7% 오른 반면 중소기업(300인 미만)은 2.7% 인상에 그쳤다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">Korea Business Review · 체감임금 간극 분석 ↗</a></p><p class="claim">격차의 핵심은 기본급이 아닌 성과급 등 특별급여였다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">Korea Business Review · 체감임금 간극 분석 ↗</a></p><p class="claim">보상체계 공정성 강화와 직원경험(EX) 혁신이 인력 확보의 기본 대응책으로 재점검되고 있다. <a class="tag tag-issue" href="https://www.carrotglobalblog.com/2026-domestic-company-global-hr-status-debriefing-part-3-tasks-250806/" target="_blank" rel="noopener">Carrot Global · 글로벌 HR 현황 디브리핑 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-issue">평가 · 규제</span><h4>AI 채용·평가 규제가 현실화 단계로</h4></div>
+      <div class="card-body"><p class="claim">EU AI Act는 채용·평가를 포함한 직장 내 AI 활용 대부분을 고위험으로 분류했고, 2026년 8월 준수 시한이 임박했다. <a class="tag tag-issue" href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026 ↗</a></p><p class="claim">국내에서도 채용절차법 개정을 통해 AI 채용의 사전고지·차별방지 기준을 정비하는 논의가 이어지고 있다. <a class="tag tag-issue" href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제 ↗</a></p></div>
+    </article></div>
+    
+    
+    <details class="deepdive">
+      <summary><span class="dd-badge dd-badge-issue">심층</span>임금체계, 연공서열에서 성과·유연 구조로<span class="dd-chevron">▾</span></summary>
+      <div class="dd-body">
+        <p>완성차 업계를 중심으로 근로시간 단축과 맞물려 기존 시급제·수당중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다. <a class="tag tag-issue" href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토 ↗</a></p><p>EU에서도 2026년 7월 31일까지 스킬 기반 보상 구조를 갖추도록 요구하는 임금투명성 지침이 시행돼, 국내 기업들도 직무·스킬 기준 보상 설계를 준비할 필요가 커졌다. <a class="tag tag-issue" href="https://ravio.com/blog/everything-you-need-to-know-about-the-eu-pay-transparency-directive" target="_blank" rel="noopener">Ravio · EU Pay Transparency Directive ↗</a></p>
       </div>
-      <div class="ov-box"><div class="ov-label">Overview</div><div class="ov-text">AI는 이제 HR의 부가 기능이 아니라 채용·평가 프로세스의 기본 인프라로 자리잡고 있다. 국내 상위 기업 다수가 AI 채용솔루션을 도입했거나 검토 중이고, HR 조직 리더의 절반 이상은 올해 안에 AI 에이전트를 팀에 추가할 계획이다. 동시에 EU와 국내에서 각각 AI Act·채용절차법을 통해 알고리즘 투명성과 차별 방지 규제가 현실화되고 있다.</div></div>
-      <div class="card-grid"><div class="card green">
-        <div class="ctag">AI 채용</div>
-        <div class="ctitle">AI 채용솔루션, 이미 표준 인프라로</div>
-        <div class="cbody">국내 상위 100대 기업 중 약 73%가 AI 기반 채용 솔루션을 도입했거나 도입을 검토 중이며, 신규 채용 공고의 64%가 'AI 툴 활용 경험'을 우대 조건으로 명시했다. AI 활용 능력은 신입·경력 채용 모두에서 상위 3대 필수 역량으로 꼽힌다.</div>
-      </div><div class="card blue">
-        <div class="ctag">AI 에이전트</div>
-        <div class="ctitle">HR 조직, AI 에이전트를 팀원으로 편입</div>
-        <div class="cbody">HR 조직 리더의 52%가 2026년에 AI 에이전트를 팀에 추가할 계획이라고 밝혔다. 이는 단순한 인력 감축이 아니라 팀 구성과 업무 배분 자체를 에이전트 중심으로 재설계하는 구조적 변화를 시사한다.</div>
-      </div></div>
+    </details>
+    <div class="insight insight-issue">
+      <span class="insight-label">시사점</span>
+      <p>채용은 '많이'에서 '맞게'로, 보상은 '공정하게 보이는 것'에서 '공정함을 증명하는 것'으로 무게중심이 이동하고 있다 — 두 축 모두 결국 '평가 기준의 투명성'이라는 하나의 과제로 수렴한다.</p>
+    </div>
+    <div class="chip-row"><span class="chip chip-issue">팀핏</span><span class="chip chip-issue">롱테일 채용</span><span class="chip chip-issue">임금 공정성</span><span class="chip chip-issue">성과급 격차</span><span class="chip chip-issue">AI 채용 규제</span></div>
+    <div class="cite-index">
+      <div class="cite-index-label">이 섹션에서 인용한 기사</div>
+      <ul><li><a href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">Korea Business Review · 하반기 채용시장 흐름</a></li><li><a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li><a href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">Korea Business Review · 체감임금 간극 분석</a></li><li><a href="https://www.carrotglobalblog.com/2026-domestic-company-global-hr-status-debriefing-part-3-tasks-250806/" target="_blank" rel="noopener">Carrot Global · 글로벌 HR 현황 디브리핑</a></li><li><a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li><a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제</a></li><li><a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li><li><a href="https://ravio.com/blog/everything-you-need-to-know-about-the-eu-pay-transparency-directive" target="_blank" rel="noopener">Ravio · EU Pay Transparency Directive</a></li></ul>
+    </div>
+  </section>
+  <section class="pillar" id="tech">
+    <header class="pillar-head pillar-head-tech">
+      <span class="pillar-icon">🤖</span>
+      <div>
+        <div class="pillar-eyebrow">PILLAR 02 · TECH REVIEW</div>
+        <h2>HR 기술 변화 리뷰</h2>
+      </div>
+    </header>
+    <p class="pillar-framing">AI는 더 이상 HR의 부가 기능이 아니라 채용·평가의 기본 인프라다. 동시에 그 사용 방식을 증명하라는 규제 압력도 함께 커지고 있다.</p>
+    <div class="card-stack">
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-tech">AI 채용</span><h4>AI 채용솔루션, 이미 표준 인프라로</h4></div>
+      <div class="card-body"><p class="claim">국내 상위 100대 기업 중 약 73%가 AI 기반 채용 솔루션을 도입했거나 도입을 검토 중이다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대 ↗</a></p><p class="claim">신규 채용 공고의 64%가 'AI 툴 활용 경험'을 우대 조건으로 명시했다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대 ↗</a></p><p class="claim">AI 활용 능력은 신입·경력 채용 모두에서 상위 3대 필수 역량으로 꼽힌다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-tech">AI 에이전트</span><h4>HR 조직, AI 에이전트를 팀원으로 편입</h4></div>
+      <div class="card-body"><p class="claim">국내 500대 기업의 86.7%가 이미 인사 업무에 AI를 활용하고 있다. <a class="tag tag-tech" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a></p><p class="claim">HR 조직 리더의 52%가 2026년에 AI 에이전트를 팀에 추가할 계획이라고 밝혔다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></p></div>
+    </article></div>
+    
+    <div class="chart">
+      <div class="chart-title">AI · HR테크 도입 지표</div>
       
-      <div class="div-text"><span>AI·HR테크 도입 지표</span></div>
-      <div class="bar-wrap">
-        <div class="bar-label-top">AI·HR테크 도입 지표</div>
         <div class="bar-row">
-            <div class="bar-lbl">인사업무 AI 활용(500대기업)</div>
-            <div class="bar-track"><div class="bar-fill blue" style="width:86.7%"></div></div>
-            <div class="bar-pct">86.7%</div>
-          </div><div class="bar-row">
-            <div class="bar-lbl">AI채용솔루션 도입·검토(100대기업)</div>
-            <div class="bar-track"><div class="bar-fill green" style="width:73%"></div></div>
-            <div class="bar-pct">73%</div>
-          </div><div class="bar-row">
-            <div class="bar-lbl">채용공고 AI툴 경험 우대 명시</div>
-            <div class="bar-track"><div class="bar-fill gold" style="width:64%"></div></div>
-            <div class="bar-pct">64%</div>
-          </div><div class="bar-row">
-            <div class="bar-lbl">HR리더 AI에이전트 도입 계획</div>
-            <div class="bar-track"><div class="bar-fill " style="width:52%"></div></div>
-            <div class="bar-pct">52%</div>
-          </div>
-      </div><div class="xpand">
-        <button class="xbtn" onclick="toggle(this)">
-          <div class="xl"><span class="xb" style="background:#a07828">규제 워치</span>EU AI Act 고위험 분류, HR이 지금 해야 할 일</div>
-          <span class="xa">▼</span>
-        </button>
-        <div class="xcontent"><p>EU AI Act는 채용·평가를 포함한 대다수 직장 내 AI 활용을 고위험으로 분류하며, 2026년 8월 준수 시한을 앞두고 인적 감독, 근로자 사전고지, 로그 기록, 편향성 테스트, 영향평가 체계 구축을 요구한다.</p><p>국내에서도 채용절차법 개정 논의를 통해 AI 채용의 고지의무와 차별금지 기준을 명확히 하려는 움직임이 이어지고 있다. 글로벌 기업뿐 아니라 국내 기업도 국내외 이중 규제에 대응할 체계를 미리 갖출 필요가 있다.</p></div>
-      </div><div class="callout green">HR테크 투자의 성패는 '얼마나 빨리 도입하느냐'가 아니라 '얼마나 투명하게 설명 가능한가'에 달려 있다.</div><div class="chip-row"><span class="chip green">AI 채용솔루션</span><span class="chip blue">AI 에이전트</span><span class="chip outline">EU AI Act</span><span class="chip outline">채용절차법 개정</span></div><div class="srcbox">
-          <div class="src-label">데이터 출처 (출처 5개)</div>
-          <ul class="slist">
-            <li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank">Class101, 2026 HR 트렌드: AI 역량부터 유연근무까지</a>
-              <span class="src-meta">2026</span></li><li><a href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank">Class101, 2026 HR 채용 트렌드: 스킬 중심 채용의 시대</a>
-              <span class="src-meta">2026</span></li><li><a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank">GreetingHR, 2026년 채용절차법, AI 채용은 어디까지 규제될까</a>
-              <span class="src-meta">2026</span></li><li><a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank">Firstup, The HR Technology Trends to Watch in 2026</a>
-              <span class="src-meta">2026</span></li><li><a href="https://www.hibob.com/guides/hr-trends-2026/" target="_blank">Hibob, The future of work in 2026: 8 HR trends</a>
-              <span class="src-meta">2026</span></li>
-          </ul>
+          <div class="bar-lbl">인사업무 AI 활용 (500대기업) <a class="tag tag-tech" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a></div>
+          <div class="bar-track"><div class="bar-fill bar-tech" style="width:86.7%"></div></div>
+          <div class="bar-pct">86.7%</div>
         </div>
-    </div><div class="section" id="s03">
-      <div class="sec-header">
-        <span class="sec-num">03</span>
-        <span class="sec-title">직무·일하는 방식 변화 리뷰</span>
-        <span class="src-count">출처 5개</span>
-        <span class="sec-icon">🧭</span>
-      </div>
-      <div class="ov-box"><div class="ov-label">Overview</div><div class="ov-text">근무 방식은 시간 단축과 장소의 자유가 동시에 확대되는 방향으로 재편되고 있다. 국내에서는 임금 삭감 없는 주4.5일제 도입이 목표치를 조기 달성했고, 하이브리드·비동기 협업이 기본값이 되는 '언테더드 HR'이 확산 중이다. 한편 글로벌에서는 AI 인프라 투자와 대규모 감원이 동시에 진행되며 재교육 수요가 빠르게 커지고 있다.</div></div>
-      <div class="card-grid"><div class="card green">
-        <div class="ctag">근무제도</div>
-        <div class="ctitle">주 4.5일제, 조기 목표 달성</div>
-        <div class="cbody">상반기에만 224개 기업이 주4.5일제를 도입하는 등 노·사 합의로 근로시간을 단축해 정부의 연간 목표치를 초과 달성했다. 올해 처음 시행된 '워라밸+4.5 프로젝트'는 임금 감소 없이 실근로시간을 단축한 기업을 지원한다.</div>
-      </div><div class="card blue">
-        <div class="ctag">일하는 방식</div>
-        <div class="ctitle">'언테더드 HR' — 시간·장소의 경계가 사라진다</div>
-        <div class="cbody">재택·원격·하이브리드 근무가 다양한 형태로 일상에 자리 잡으면서 HR 운영 방식도 실시간·비동기 협업 체계로 전환되고 있다. 시간과 장소에 묶이지 않는 조직 운영이 2026년 HR의 3대 핵심 트렌드 중 하나로 꼽힌다.</div>
-      </div><div class="card gold">
-        <div class="ctag">직무 재편</div>
-        <div class="ctitle">감원과 재교육이 동시에 진행되는 이중 구조</div>
-        <div class="cbody">미국 빅테크는 2026년 들어 14만 명 이상을 감원하는 동시에 AI 인프라에 7,250억 달러를 투자하고 있다. WEF는 2030년까지 핵심 스킬의 40%가 바뀌고 근로자 100명 중 59명이 재교육이 필요할 것으로 전망한다.</div>
-      </div></div>
-      <div class="xpand">
-        <button class="xbtn" onclick="toggle(this)">
-          <div class="xl"><span class="xb" style="background:#a07828">케이스</span>현대차 임금체계 개편이 시사하는 것</div>
-          <span class="xa">▼</span>
-        </button>
-        <div class="xcontent"><p>완성차 업계를 중심으로 근로시간 단축이 확산되며 기존 시급제·수당 중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다.</p><p>이는 근로시간 단축과 임금 유지라는 두 목표를 동시에 만족시키려는 시도지만, 명확한 설계와 노사 합의 없이는 오히려 갈등 요인이 될 수 있어 다른 업종에도 참고할 만한 선행 사례로 주목된다.</p></div>
-      </div><div class="callout gold">일하는 시간과 장소의 자유는 늘어나지만, 그만큼 성과와 역량을 증명해야 하는 책임도 함께 커지고 있다.</div><div class="chip-row"><span class="chip green">주4.5일제</span><span class="chip outline">언테더드 HR</span><span class="chip gold">리스킬링</span><span class="chip outline">임금체계 개편</span><span class="chip">AI 전환형 구조조정</span></div><div class="srcbox">
-          <div class="src-label">데이터 출처 (출처 5개)</div>
-          <ul class="slist">
-            <li><a href="https://v.daum.net/v/GoWh942uh2" target="_blank">Daum, 224개 기업 4.5일제 도입 등 근로시간 단축…목표치 조기 달성</a>
-              <span class="src-meta">2026</span></li><li><a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank">고용노동부, 2026년 업무보고 보도자료</a>
-              <span class="src-meta">2026</span></li><li><a href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank">The Economy Korea, 1년 반 새 24만 개 일자리 증발…빅테크 해고 폭풍</a>
-              <span class="src-meta">2026.07</span></li><li><a href="http://www.koreatimes.com/article/20260728/1623344" target="_blank">미주 한국일보, AI에 7,000억달러 쏟고 올해 직원 14만명 감원</a>
-              <span class="src-meta">2026.07.28</span></li><li><a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank">o2u, 현대차 임금체계 검토 2026년 전환 방법과 기준 분석</a>
-              <span class="src-meta">2026</span></li>
-          </ul>
+        <div class="bar-row">
+          <div class="bar-lbl">AI채용솔루션 도입·검토 (100대기업) <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대 ↗</a></div>
+          <div class="bar-track"><div class="bar-fill bar-tech" style="width:73%"></div></div>
+          <div class="bar-pct">73%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-lbl">채용공고 AI툴 경험 우대 명시 <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대 ↗</a></div>
+          <div class="bar-track"><div class="bar-fill bar-tech" style="width:64%"></div></div>
+          <div class="bar-pct">64%</div>
+        </div>
+        <div class="bar-row">
+          <div class="bar-lbl">HR리더 AI에이전트 도입 계획 <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></div>
+          <div class="bar-track"><div class="bar-fill bar-tech" style="width:52%"></div></div>
+          <div class="bar-pct">52%</div>
         </div>
     </div>
-<div class="section" id="s-ed">
-  <div class="sec-header"><span class="sec-num">ED</span><span class="sec-title">편집장 총평</span><span class="sec-icon">📝</span></div>
-  <div class="ed-box"><div class="ed-lbl">Editor Note</div><div class="ed-txt">이번 주 HR 이슈를 관통하는 키워드는 '선택과 집중'이다. 채용은 대규모 정기공채 대신 팀핏에 맞는 소수 정예를 수시로 뽑는 방식으로, 보상은 공정성과 투명성을 증명하는 방식으로, 일하는 방식은 시간이 아닌 성과를 기준으로 재편되고 있다. AI는 이 모든 변화의 촉매이자 동시에 감원의 명분이 되고 있어, HR 담당자는 기술 도입 속도만큼이나 그로 인한 인력 재배치·재교육·공정성 설계에도 균형 있게 투자해야 한다.</div></div>
+    
+    <details class="deepdive">
+      <summary><span class="dd-badge dd-badge-tech">심층</span>EU AI Act 고위험 분류, HR이 지금 해야 할 일<span class="dd-chevron">▾</span></summary>
+      <div class="dd-body">
+        <p>EU AI Act는 채용·평가를 포함한 대다수 직장 내 AI 활용을 고위험으로 분류하며, 2026년 8월 준수 시한을 앞두고 인적 감독, 근로자 사전고지, 로그 기록, 편향성 테스트, 영향평가 체계 구축을 요구한다. <a class="tag tag-tech" href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026 ↗</a></p><p>국내에서도 채용절차법 개정 논의를 통해 AI 채용의 고지의무와 차별금지 기준을 명확히 하려는 움직임이 이어지고 있어, 국내 기업도 국내외 이중 규제 대응 체계를 미리 갖출 필요가 있다. <a class="tag tag-tech" href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제 ↗</a></p>
+      </div>
+    </details>
+    <div class="insight insight-tech">
+      <span class="insight-label">시사점</span>
+      <p>HR테크 투자의 성패는 '얼마나 빨리 도입하느냐'가 아니라 '왜 그렇게 판단했는지 얼마나 투명하게 설명 가능한가'로 옮겨가고 있다 — 도입 속도와 설명 책임을 같은 예산 안에서 함께 설계해야 한다.</p>
+    </div>
+    <div class="chip-row"><span class="chip chip-tech">AI 채용솔루션</span><span class="chip chip-tech">AI 에이전트</span><span class="chip chip-tech">EU AI Act</span><span class="chip chip-tech">채용절차법 개정</span></div>
+    <div class="cite-index">
+      <div class="cite-index-label">이 섹션에서 인용한 기사</div>
+      <ul><li><a href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li><a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li><a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제</a></li></ul>
+    </div>
+  </section>
+  <section class="pillar" id="work">
+    <header class="pillar-head pillar-head-work">
+      <span class="pillar-icon">🧭</span>
+      <div>
+        <div class="pillar-eyebrow">PILLAR 03 · WORK REVIEW</div>
+        <h2>직무 · 일하는 방식 변화 리뷰</h2>
+      </div>
+    </header>
+    <p class="pillar-framing">근무 시간은 줄고 장소의 자유는 늘지만, 그만큼 감원과 재교육이 동시에 진행되는 이중 구조가 뚜렷해지고 있다.</p>
+    <div class="card-stack">
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-work">근무 제도</span><h4>주 4.5일제, 조기 목표 달성</h4></div>
+      <div class="card-body"><p class="claim">상반기에만 224개 기업이 주4.5일제를 도입해 정부의 연간 목표치를 초과 달성했다. <a class="tag tag-work" href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입 ↗</a></p><p class="claim">올해 처음 시행된 '워라밸+4.5 프로젝트'는 임금 감소 없이 실근로시간을 단축한 기업을 지원한다. <a class="tag tag-work" href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">고용노동부 · 2026년 업무보고 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-work">일하는 방식</span><h4>'언테더드 HR' — 시간·장소의 경계가 사라진다</h4></div>
+      <div class="card-body"><p class="claim">재택·원격·하이브리드 근무가 다양한 형태로 일상에 자리 잡으며 HR 운영도 실시간·비동기 협업 체계로 전환되고 있다. <a class="tag tag-work" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></p><p class="claim">시간과 장소에 묶이지 않는 '언테더드 HR'이 2026년 HR의 3대 핵심 트렌드 중 하나로 꼽힌다. <a class="tag tag-work" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지 ↗</a></p></div>
+    </article>
+    <article class="card">
+      <div class="card-head"><span class="card-tag card-tag-work">직무 재편</span><h4>감원과 재교육이 동시에 진행되는 이중 구조</h4></div>
+      <div class="card-body"><p class="claim">미국 빅테크는 2026년 들어 14만 명 이상을 감원하는 동시에 AI 인프라에 7,250억 달러를 투자하고 있다. <a class="tag tag-work" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원 ↗</a></p><p class="claim">아마존·오라클·메타·마이크로소프트 4개 기업에서만 약 5만 명이 일자리를 잃었다. <a class="tag tag-work" href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍 ↗</a></p><p class="claim">WEF는 2030년까지 핵심 스킬의 40%가 바뀌고, 근로자 100명 중 59명이 재교육이 필요할 것으로 전망한다. <a class="tag tag-work" href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics ↗</a></p></div>
+    </article></div>
+    
+    
+    <details class="deepdive">
+      <summary><span class="dd-badge dd-badge-work">심층</span>현대차 임금체계 개편이 시사하는 것<span class="dd-chevron">▾</span></summary>
+      <div class="dd-body">
+        <p>완성차 업계를 중심으로 근로시간 단축이 확산되며 기존 시급제·수당 중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다. <a class="tag tag-work" href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토 ↗</a></p><p>이는 근로시간 단축과 임금 유지라는 두 목표를 동시에 만족시키려는 시도지만, 명확한 설계와 노사 합의 없이는 오히려 갈등 요인이 될 수 있어 다른 업종에도 참고할 만한 선행 사례로 주목된다.</p>
+      </div>
+    </details>
+    <div class="insight insight-work">
+      <span class="insight-label">시사점</span>
+      <p>일하는 시간과 장소의 자유는 늘어나지만, 그만큼 성과와 역량을 증명해야 하는 책임도 함께 커지고 있다 — '유연함'과 '재교육 투자'는 같은 정책의 양면으로 다뤄야 한다.</p>
+    </div>
+    <div class="chip-row"><span class="chip chip-work">주4.5일제</span><span class="chip chip-work">언테더드 HR</span><span class="chip chip-work">리스킬링</span><span class="chip chip-work">임금체계 개편</span><span class="chip chip-work">AI 전환형 구조조정</span></div>
+    <div class="cite-index">
+      <div class="cite-index-label">이 섹션에서 인용한 기사</div>
+      <ul><li><a href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입</a></li><li><a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">고용노동부 · 2026년 업무보고</a></li><li><a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li><a href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원</a></li><li><a href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍</a></li><li><a href="https://blog.letaido.com/ai-job-displacement-statistics" target="_blank" rel="noopener">Letaido · AI Job Displacement Statistics</a></li><li><a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li></ul>
+    </div>
+  </section>
+
+  <section class="editor" id="editor">
+    <div class="editor-label">편집장 총평</div>
+    <p>이번 주 HR 이슈를 관통하는 키워드는 '선택과 집중'이다. 채용은 대규모 정기공채 대신 팀핏에 맞는 소수 정예를 수시로 뽑는 방식으로, 보상은 공정성과 투명성을 증명하는 방식으로, 일하는 방식은 시간이 아닌 성과를 기준으로 재편되고 있다. AI는 이 모든 변화의 촉매이자 동시에 감원의 명분이 되고 있어, HR 담당자는 기술 도입 속도만큼이나 그로 인한 인력 재배치·재교육·공정성 설계에도 균형 있게 투자해야 한다.</p>
+  </section>
   <div class="next"><strong>다음 호 예고</strong> — 다음 호에서는 국내 대기업의 2026년 하반기 정기 성과평가 개편 사례와 주4.5일제 도입 기업의 임금체계 설계 노하우를 심층 분석합니다.</div>
+
+  <div class="footer">
+    <div class="footer-brand">HR 트렌드 주간 보고서</div>
+    <div class="footer-meta">2026 Vol.34 · Web Search + AI<br>2026.08.21 (금)</div>
+  </div>
 </div>
-<div class="footer">
-  <div class="footer-brand">HR 트렌드 주간 보고서</div>
-  <div class="footer-meta">2026 Vol.34 · Web Search + AI<br>2026.08.21 (금)</div>
-</div>
-<script>function toggle(b){b.classList.toggle("open");b.nextElementSibling.classList.toggle("open");}</script>
 </body></html>
