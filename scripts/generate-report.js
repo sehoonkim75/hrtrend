@@ -1,14 +1,24 @@
 // scripts/generate-report.js
 // 구조: Step1 웹검색(기사+영상)으로 실제 데이터 수집 → Step2 JSON 생성(3분할) → HTML 저장
-// v3: 화이트모드(눈이 덜 피로한 톤), 3개 축(이슈/기술/일하는 방식) 브리핑 레이아웃,
-//     기술 섹션은 서브그룹+타임라인으로 심화(최근 2주 데이터 우선), 문구 단위 출처 태깅
-//     (기사·유튜브 영상 모두 포함), 균형 톤, PDF 저장 버튼. '다음 호 예고'는 없음.
+// v4: OpenAI API(Responses API) 기반. 화이트모드(눈이 덜 피로한 톤), 4개 축
+//     (이슈/기술/근무방식/HRD) 브리핑 레이아웃, 기술 섹션은 서브그룹+타임라인으로
+//     심화(최근 2주 데이터 우선), 문구 단위 출처 태깅(기사·영상·학술연구·공공발표 포함),
+//     출처 다양성·정부-민간 균형 규칙, PDF 저장 버튼. '다음 호 예고'는 없음.
+//
+// ⚠️ OpenAI Responses API는 계속 진화 중입니다 — 이 스크립트가 오래됐다면 아래를
+//    실행 전에 https://platform.openai.com/docs/api-reference/responses 에서
+//    MODEL과 웹 검색 툴 타입(WEB_SEARCH_TOOL_TYPE)이 여전히 유효한지 확인하세요.
 
-const Anthropic = require("@anthropic-ai/sdk");
+const OpenAI = require("openai");
 const fs = require("fs");
 const path = require("path");
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+// 웹 검색이 가능한 모델과 OpenAI 호스팅 웹 검색 툴 타입을 한 곳에서 관리합니다.
+// (openai SDK 7.x 기준 유효한 툴 타입: "web_search" 또는 "web_search_preview")
+const MODEL = "gpt-4.1";
+const WEB_SEARCH_TOOL_TYPE = "web_search";
+
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // ─────────────────────────────────────────────────────────
 // 날짜/주차 계산
@@ -37,7 +47,8 @@ const TOPIC = `${YEAR}년 ${MON}월 ${VOL}주차 HR 트렌드 (채용·평가·�
 // 재시도 유틸
 // ─────────────────────────────────────────────────────────
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const RETRYABLE = new Set([429, 500, 529]);
+const RATE_LIMIT_WAIT_MS = Number(process.env.RATE_LIMIT_WAIT_MS) || 65000; // 분당 토큰 한도 방지 대기
+const RETRYABLE = new Set([429, 500, 502, 503]);
 
 async function withRetry(fn, label) {
   const MAX = 4;
@@ -59,7 +70,7 @@ async function withRetry(fn, label) {
 // STEP 1: 웹검색 agentic loop → 원문 수집 (기사 + 유튜브 영상)
 // ─────────────────────────────────────────────────────────
 const SEARCH_SYSTEM = `당신은 HR 리서처입니다.
-web_search 툴을 10회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
+웹 검색을 10회 이상 실행해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
 
 출처 다양성 원칙 (중요):
 - 특정 매체·채널·블로그 하나에 지나치게 의존하지 마세요. 최종적으로 서로 다른 도메인(매체/기관) 8곳 이상에서 자료를 확보하는 것을 목표로 하세요.
@@ -119,57 +130,22 @@ web_search 툴을 10회 이상 사용해 "최근 1~2주 이내"에 나온 HR 관
 
 async function collectSearchData() {
   console.log("   web_search 시작 (기사 + 유튜브)...");
-  const messages = [{
-    role: "user",
-    content: `${TOPIC} 관련 최신 데이터를 web_search로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요. 특정 매체 하나에 몰리지 않도록 서로 다른 도메인 8곳 이상에서 수집하고, 국내 이슈는 정부·공공기관 발표를 최소 2건, HR 기술 관련은 학술 논문·연구기관 자료를 최소 1~2건 반드시 포함해주세요.`,
-  }];
-
-  let response = await withRetry(() =>
-    client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      system: SEARCH_SYSTEM,
-      tools: [{ type: "web_search_20250305", name: "web_search" }],
-      messages,
+  // OpenAI Responses API의 호스팅 웹 검색 툴은 서버 측에서 검색 라운드를 자체
+  // 진행하고 최종 텍스트를 돌려줍니다 — Anthropic처럼 tool_use/tool_result를
+  // 클라이언트가 직접 주고받는 수동 루프가 필요 없습니다.
+  const response = await withRetry(() =>
+    client.responses.create({
+      model: MODEL,
+      instructions: SEARCH_SYSTEM,
+      input: `${TOPIC} 관련 최신 데이터를 웹 검색으로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요. 특정 매체 하나에 몰리지 않도록 서로 다른 도메인 8곳 이상에서 수집하고, 국내 이슈는 정부·공공기관 발표를 최소 2건, HR 기술 관련은 학술 논문·연구기관 자료를 최소 1~2건 반드시 포함해주세요.`,
+      tools: [{ type: WEB_SEARCH_TOOL_TYPE }],
     }), "검색"
   );
 
-  let round = 0;
-  while (response.stop_reason === "tool_use" && round < 14) {
-    round++;
-    const toolUses = response.content.filter((b) => b.type === "tool_use");
-    toolUses.forEach((t) => console.log(`   🔎 검색 [${round}]: "${t.input?.query || ""}"`));
+  const searchCalls = (response.output || []).filter((b) => b.type === "web_search_call").length;
+  const text = (response.output_text || "").trim();
 
-    messages.push({ role: "assistant", content: response.content });
-    messages.push({
-      role: "user",
-      content: toolUses.map((t) => ({
-        type: "tool_result",
-        tool_use_id: t.id,
-        content: t.output
-          ? typeof t.output === "string" ? t.output : JSON.stringify(t.output)
-          : "검색 완료",
-      })),
-    });
-
-    response = await withRetry(() =>
-      client.messages.create({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 4000,
-        system: SEARCH_SYSTEM,
-        tools: [{ type: "web_search_20250305", name: "web_search" }],
-        messages,
-      }), `검색 후속 ${round}`
-    );
-  }
-
-  const text = response.content
-    .filter((b) => b.type === "text")
-    .map((b) => b.text)
-    .join("\n")
-    .trim();
-
-  console.log(`   ✅ 검색 완료 — ${text.length}자 수집, ${round}회 검색`);
+  console.log(`   ✅ 검색 완료 — ${text.length}자 수집, 검색 호출 ${searchCalls}회`);
   return text;
 }
 
@@ -325,15 +301,13 @@ function parseJSON(raw) {
 
 async function generateJSON(system, label) {
   const text = await withRetry(() =>
-    client.messages.create({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      system,
-      messages: [{
-        role: "user",
-        content: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchDataGlobal}`,
-      }],
-    }).then((r) => r.content.filter((b) => b.type === "text").map((b) => b.text).join("").trim()),
+    client.responses.create({
+      model: MODEL,
+      instructions: system,
+      input: `Vol: ${VOL} / 날짜: ${DATE}\n\n아래 실제 검색 데이터를 바탕으로 JSON을 생성하세요:\n\n${searchDataGlobal}`,
+      // "json_object" 모드: 순수 JSON 문자열만 받도록 강제 (프롬프트에도 "JSON만 출력"을 명시)
+      text: { format: { type: "json_object" } },
+    }).then((r) => (r.output_text || "").trim()),
     label
   );
   console.log(`   ✅ ${label} 완료 (${text.length}자)`);
@@ -699,21 +673,21 @@ async function main() {
   console.log("");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
-  await sleep(65000);
+  await sleep(RATE_LIMIT_WAIT_MS);
   console.log("   ✅ 대기 완료\n");
 
   console.log("📋 Step 2A: meta·stats·이슈 필러 생성...");
   const partA = await generateJSON(PART_A_SYSTEM, "Part A (이슈)");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
-  await sleep(65000);
+  await sleep(RATE_LIMIT_WAIT_MS);
   console.log("   ✅ 대기 완료\n");
 
   console.log("📋 Step 2B: 기술 필러 생성 (타임라인·서브그룹·리스크 카드 포함)...");
   const partB = await generateJSON(PART_B_SYSTEM, "Part B (기술)");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
-  await sleep(65000);
+  await sleep(RATE_LIMIT_WAIT_MS);
   console.log("   ✅ 대기 완료\n");
 
   console.log("📋 Step 2C: 근무방식·HRD 필러·전체 리뷰 생성...");

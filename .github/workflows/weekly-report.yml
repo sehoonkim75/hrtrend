@@ -24,11 +24,11 @@ jobs:
           node-version: '20'
 
       - name: install
-        run: npm install @anthropic-ai/sdk
+        run: npm install openai
 
       - name: generate
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node scripts/generate-report.js
 
       - name: commit-and-push
