@@ -59,7 +59,8 @@ const TOPIC = `${YEAR}년 ${MON}월 ${VOL}주차 HR 트렌드 (채용·평가·�
 // 재시도 유틸
 // ─────────────────────────────────────────────────────────
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const RATE_LIMIT_WAIT_MS = Number(process.env.RATE_LIMIT_WAIT_MS) || 65000; // 분당 토큰 한도 방지 대기
+const RATE_LIMIT_WAIT_MS = Number(process.env.RATE_LIMIT_WAIT_MS) || 65000; // 분당 토큰 한도 방지 대기 (Part A/B/C 사이)
+const SEARCH_CALL_STAGGER_MS = Number(process.env.SEARCH_CALL_STAGGER_MS) || 4000; // 검색 주제별 호출 사이 짧은 텀
 const RETRYABLE = new Set([429, 500, 502, 503]);
 
 async function withRetry(fn, label) {
@@ -79,87 +80,107 @@ async function withRetry(fn, label) {
 }
 
 // ─────────────────────────────────────────────────────────
-// STEP 1: 웹검색 agentic loop → 원문 수집 (기사 + 유튜브 영상)
+// STEP 1: 웹검색 → 원문 수집 (기사 + 유튜브 영상 + 학술연구 + 공공발표)
 // ─────────────────────────────────────────────────────────
-const SEARCH_SYSTEM = `당신은 HR 리서처입니다.
-웹 검색을 10회 이상 실행해 "최근 1~2주 이내"에 나온 HR 관련 최신 데이터를 국내외 균형 있게 수집하세요.
+// 이전 버전은 "웹 검색을 N회 이상 하라"는 지시 하나를 시스템 프롬프트에 넣고
+// 모델이 한 번의 응답 안에서 알아서 여러 번 검색하길 기대했는데, 실제로는
+// 모델이 검색을 1회만 하고 끝내는 경우가 많아 수집량이 매우 부실했습니다
+// (예: 실제 운영 실행에서 649자·검색 1회에 그침).
+// 그래서 지금은 주제별로 "우리가 직접" 별도의 web_search 호출을 하나씩
+// 순차적으로 실행합니다 — 모델의 재량에 기대지 않고 커버리지를 코드로 보장합니다.
+// 부수 효과: 호출 단위가 주제이므로, 주제/유형별로 실제 수집 건수를 정확히
+// 세어(count) 대시보드에 그대로 쓸 수 있습니다(제3의 LLM 추정치가 아님).
+const SEARCH_TOPICS = [
+  { key: "issue_domestic", label: "국내 채용·평가·보상", tag: null,
+    query: "국내 채용 트렌드, 임금 인상률, 성과급, 임금체계 개편 관련 최근 1~2주 이내 뉴스" },
+  { key: "issue_global", label: "글로벌 채용·보상", tag: null,
+    query: "글로벌 채용 동향, pay transparency, AI 채용 규제 관련 최근 뉴스" },
+  { key: "tech_adopt", label: "HR 기술 도입", tag: null,
+    query: "AI 채용솔루션, AI 에이전트, HR테크 도입률 관련 최근 2주 이내 뉴스" },
+  { key: "tech_risk", label: "HR 기술 리스크·반발", tag: null,
+    query: "AI 채용 편향, 오탈락, 노동계 반발, 감원 명분화 논란 관련 최근 2주 이내 뉴스 (긍정적 도입 사례가 아니라 비판·우려·반발 보도를 찾을 것)" },
+  { key: "video", label: "HR·AI 유튜브 영상", tag: "[영상]",
+    query: "site:youtube.com 채용 트렌드 AI HR 전문가 리뷰 또는 뉴스 리포트 영상 (2026년, 유튜브)" },
+  { key: "research", label: "HR·AI 학술 연구·저널", tag: "[연구]",
+    query: "AI hiring bias research paper OR algorithmic recruitment fairness study OR site:arxiv.org AI recruitment OR 한국노동연구원 AI 채용 연구 OR KDI AI 노동시장 연구" },
+  { key: "public", label: "국내 정부·공공기관 발표", tag: "[공공]",
+    query: "고용노동부 OR 통계청 OR 한국노동연구원 OR KDI OR 정책브리핑(korea.kr) 공식 발표·통계·정책 관련 최근 뉴스" },
+  { key: "worklife", label: "근무 방식·직무 변화", tag: null,
+    query: "주4.5일제, 하이브리드·원격근무, 리스킬링 관련 최근 뉴스" },
+  { key: "layoffs", label: "감원·구조조정", tag: null,
+    query: "빅테크 감원, AI발 구조조정 관련 최근 뉴스 (그 배경에 대한 회의적 시각 포함)" },
+  { key: "hrd", label: "HRD·교육개발", tag: null,
+    query: "리스킬링·업스킬링 우선순위, 기업 교육 예산, AI 교육/LXP 도입 관련 최근 뉴스" },
+  { key: "labor_dispute", label: "노사관계 갈등·쟁의(임금 이슈 추정 신호)", tag: null,
+    query: "임금·근로조건 관련 노사 갈등, 파업, 쟁의 사례 최근 1~2주 이내 뉴스 (공식 통계가 없다면 언론에 보도된 사례를 최대한 찾아서 건수를 헤아릴 것)" },
+];
 
-출처 다양성 원칙 (중요):
-- 특정 매체·채널·블로그 하나에 지나치게 의존하지 마세요. 최종적으로 서로 다른 도메인(매체/기관) 8곳 이상에서 자료를 확보하는 것을 목표로 하세요.
-- 같은 주제라도 검색어를 바꿔가며 여러 매체를 교차 검색하세요 (예: 특정 블로그 1곳의 트렌드 글만으로 여러 섹션을 채우지 말 것).
-- 단순 뉴스 기사·웹문서만으로는 최신 트렌드를 따라가기 어려우므로, 반드시 유튜브 영상도 함께 검색하세요
-  (검색어에 "유튜브" 또는 "site:youtube.com"을 포함해 최소 2회 이상 검색).
-- 국내 이슈를 다룰 때는 반드시 정부·공공기관 발표 자료(고용노동부, 통계청, 한국노동연구원(KLI), KDI, 정책브리핑(korea.kr) 등)를 최소 2건 이상 확보하고, 민간 기업·컨설팅·언론의 분석과 나란히 놓아 비교할 수 있게 하세요 — 정부 발표 지표와 민간 시각이 다르게 해석될 수 있는 지점을 의식적으로 찾으세요.
-- HR 기술(AI) 관련 자료는 뉴스·기업 블로그에만 의존하지 말고, 학술 논문·연구도 최소 1~2건 검색하세요 (검색어 예: "AI hiring bias study", "algorithmic hiring research paper", "site:arxiv.org AI recruitment", 대학 연구소·학회·저널, 한국노동연구원·KDI 등 연구기관 리포트 등).
+const SEARCH_TOPIC_SYSTEM = (topic) => `당신은 HR 리서처입니다. 아래 한 가지 주제만 웹 검색으로 조사하세요: "${topic.label}".
+최근 1~2주 이내(오늘: ${DATE}) 보도를 우선하되, 없으면 최근 1개월 이내까지 넓혀서라도 실제로 검색된 항목만 보고하세요.
+검색은 최소 2회, 검색어를 바꿔가며 서로 다른 매체/기관에서 확인하세요 — 특정 블로그·채널 1곳에서만 긁어오지 마세요.
+${topic.key === "labor_dispute" ? "공식 통계가 없는 주제입니다 — 언론에 보도된 개별 갈등·파업·쟁의 사례를 최대한 찾아 항목으로 나열하세요. 이는 '공식 통계'가 아니라 '보도 기준 추정 신호'이므로, 요약 문장에 그 점을 명시하세요." : ""}
 
-검색 주제 (각각 1회 이상, 최근 1~2주 발생 이슈 우선):
-1. 국내 채용·평가·보상 이슈 (채용 트렌드, 임금 인상률, 성과급, 임금체계 개편)
-2. 글로벌 채용·보상 이슈 (해외 채용 동향, pay transparency, AI 채용 규제)
-3. HR 기술 도입 현황 — 최근 2주 이내 뉴스 우선 (AI 채용솔루션, AI 에이전트, HR테크 도입률)
-4. HR 기술의 리스크·반발 — 최근 2주 이내 뉴스 우선, 최소 2건 이상. 기술 도입에 대한 긍정적인 수치만 모으지 말고 비판·우려·반발 보도를 의식적으로 함께 찾을 것 (AI 편향, 오탈락, 노동계 반발, 감원 명분화 논란, 규제 이슈)
-5. HR·AI 관련 유튜브 영상 (국내외 채용/HR 전문가 리뷰, 뉴스 리포트, 컨퍼런스 영상) — 최소 2건
-6. HR·AI 관련 학술 연구·저널 (대학 연구소, 학회 논문, arXiv, 노동/경제 연구기관 리포트) — 최소 1~2건, 특히 AI 채용·평가의 공정성·편향·효과성을 다룬 연구 우선
-7. 국내 정부·공공기관 발표 (고용노동부, 통계청, 한국노동연구원, KDI, 정책브리핑 등 공식 통계·연구·정책) — 최소 2건
-8. 근무 방식·직무 변화 (주4.5일제, 하이브리드/원격근무, 리스킬링)
-9. 감원·구조조정 동향 (빅테크 감원, AI발 구조조정, 그 배경에 대한 회의적 시각 포함)
-10. HRD·교육개발 (리스킬링·업스킬링 우선순위, 기업 교육 예산, AI 교육/LXP 도입, 사내 교육 트렌드)
+찾은 항목마다 실제 검색된 제목 요약, 출처명(매체명/채널명/기관명), 실제 URL, 날짜(가능하면 YYYY.MM.DD)를 다음 형식의 글머리 기호로 정확히 나열하세요. 항목이 없으면 목록을 비워두고 "검색 결과 없음"이라고만 쓰세요 — 없는 항목을 지어내지 마세요.
 
-수집 완료 후 아래 형식으로 요약하세요. 각 항목에는 반드시 실제 검색된 제목, 출처명(매체명 또는 채널명·기관명), URL, 날짜(가능한 경우 YYYY.MM.DD)를 포함하고, 유튜브 영상은 항목 앞에 "[영상]"을, 학술 논문/연구기관 자료는 "[연구]"를, 정부·공공기관 발표는 "[공공]"을 붙이세요.
+- 항목 요약 (출처명, URL, 날짜)${topic.tag ? `\n(각 항목 맨 앞에 "${topic.tag}" 를 붙이세요)` : ""}
 
-## 수집된 HR 트렌드 데이터
+마크다운 글머리 기호(- ) 목록 외의 설명은 최소화하세요.`;
 
-### 국내 채용·평가·보상
-- 항목 (출처명, URL, 날짜)
-
-### 글로벌 채용·보상
-- 항목 (출처명, URL, 날짜)
-
-### HR 기술 도입 (최근 2주 우선)
-- 항목 (출처명, URL, 날짜)
-
-### HR 기술 리스크·반발 (최근 2주 우선, 필수)
-- 항목 (출처명, URL, 날짜)
-
-### HR·AI 관련 유튜브 영상 (필수, [영상] 표시)
-- [영상] 항목 (채널명, URL, 게시일)
-
-### HR·AI 관련 학술 연구·저널 (필수, [연구] 표시)
-- [연구] 항목 (연구기관/저널명, URL, 발표일)
-
-### 국내 정부·공공기관 발표 (필수, [공공] 표시)
-- [공공] 항목 (부처/기관명, URL, 발표일)
-
-### 근무 방식·직무 변화
-- 항목 (출처명, URL, 날짜)
-
-### 감원·구조조정
-- 항목 (출처명, URL, 날짜)
-
-### HRD·교육개발
-- 항목 (출처명, URL, 날짜)
-
-출처 URL은 반드시 실제 검색된 URL만 기재하세요.`;
+function countBullets(text) {
+  const lines = (text || "").split("\n").filter((l) => /^-\s/.test(l.trim()));
+  // "검색 결과 없음" 같은 자리표시자 줄은 실제 수집 항목이 아니므로 세지 않습니다.
+  return lines.filter((l) => !/검색\s*결과\s*없음/.test(l)).length;
+}
+function countTag(text, tag) {
+  if (!tag) return 0;
+  const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return ((text || "").match(new RegExp(escaped, "g")) || []).length;
+}
 
 async function collectSearchData() {
-  console.log("   web_search 시작 (기사 + 유튜브)...");
-  // OpenAI Responses API의 호스팅 웹 검색 툴은 서버 측에서 검색 라운드를 자체
-  // 진행하고 최종 텍스트를 돌려줍니다 — Anthropic처럼 tool_use/tool_result를
-  // 클라이언트가 직접 주고받는 수동 루프가 필요 없습니다.
-  const response = await withRetry(() =>
-    client.responses.create({
-      model: MODEL,
-      instructions: SEARCH_SYSTEM,
-      input: `${TOPIC} 관련 최신 데이터를 웹 검색으로 수집해주세요. 오늘 날짜: ${DATE}. 반드시 최근 1~2주 이내 보도를 우선하고(특히 HR 기술 항목), 기술 변화에 대해서는 긍정적 도입 사례뿐 아니라 리스크·반발 보도도 함께 모아 균형을 맞추고, 유튜브 영상도 최소 2건 이상 찾아주세요. 특정 매체 하나에 몰리지 않도록 서로 다른 도메인 8곳 이상에서 수집하고, 국내 이슈는 정부·공공기관 발표를 최소 2건, HR 기술 관련은 학술 논문·연구기관 자료를 최소 1~2건 반드시 포함해주세요.`,
-      tools: [{ type: WEB_SEARCH_TOOL_TYPE }],
-      max_output_tokens: 6000, // 검색 호출 자체는 별도 과금, 이건 마지막 요약 텍스트의 상한
-    }), "검색"
-  );
+  console.log(`   web_search 시작 — 주제 ${SEARCH_TOPICS.length}개, 주제마다 별도 검색 호출...`);
+  const sections = [];
+  const byTopic = {};
+  let videoCount = 0, researchCount = 0, publicCount = 0, totalItems = 0;
 
-  const searchCalls = (response.output || []).filter((b) => b.type === "web_search_call").length;
-  const text = (response.output_text || "").trim();
+  for (const topic of SEARCH_TOPICS) {
+    const response = await withRetry(() =>
+      client.responses.create({
+        model: MODEL,
+        instructions: SEARCH_TOPIC_SYSTEM(topic),
+        input: `"${topic.label}" 주제로 웹 검색해 실제 항목을 수집해주세요. ${topic.query}`,
+        tools: [{ type: WEB_SEARCH_TOOL_TYPE }],
+        max_output_tokens: 1200,
+      }), `검색(${topic.label})`
+    );
+    const text = (response.output_text || "").trim();
+    const n = countBullets(text);
+    byTopic[topic.key] = n;
+    totalItems += n;
+    videoCount += countTag(text, "[영상]");
+    researchCount += countTag(text, "[연구]");
+    publicCount += countTag(text, "[공공]");
 
-  console.log(`   ✅ 검색 완료 — ${text.length}자 수집, 검색 호출 ${searchCalls}회`);
-  return text;
+    sections.push(`### ${topic.label}\n${text || "- 검색 결과 없음"}`);
+    console.log(`   🔎 ${topic.label}: ${n}건 (${text.length}자)`);
+
+    // 주제별로 별도 API 호출을 연속으로 쏘므로, 분당 요청/토큰 한도를 피하려고
+    // 짧게 텀을 둡니다 (65초 대기와는 별개, 훨씬 짧은 간격).
+    await sleep(SEARCH_CALL_STAGGER_MS);
+  }
+
+  const searchDataText = `## 수집된 HR 트렌드 데이터\n\n${sections.join("\n\n")}`;
+  const sourceCounts = {
+    total: totalItems,
+    video: videoCount,
+    research: researchCount,
+    public: publicCount,
+    article: Math.max(totalItems - videoCount - researchCount - publicCount, 0),
+    byTopic,
+  };
+
+  console.log(`   ✅ 검색 완료 — 총 ${totalItems}건 (영상 ${videoCount}·연구 ${researchCount}·공공 ${publicCount}·기사 ${sourceCounts.article})`);
+  return { searchDataText, sourceCounts };
 }
 
 // ─────────────────────────────────────────────────────────
@@ -174,6 +195,7 @@ const COMMON_RULES = `당신은 HR 보고서 JSON 생성기입니다.
 같은 매체·채널의 출처를 여러 섹션·카드에 반복 사용하지 마세요. 특정 출처 하나가 전체 인용의 상당 비중을 차지하지 않도록, 서로 다른 srcName을 최대한 다양하게 쓰세요.
 국내 이슈(채용·보상·근무방식)를 다룰 때는 카드 안에 정부·공공기관 발표([공공] 표시) 출처를 최소 1개는 포함해 민간 기업·언론의 시각과 나란히 제시하세요 — 가능하면 두 시각이 다르게 해석되는 지점을 문장으로 드러내세요(예: "정부 발표로는 ~한 반면, 민간에서는 ~로 본다").
 HR 기술(tech) 관련 claims에는 학술 논문·연구기관 자료([연구] 표시) 출처를 최소 1개는 포함하세요.
+공식 통계·발표가 없는 사안(예: 임금 관련 노사 갈등·파업 빈도)은 검색 데이터에 있는 "노사관계 갈등·쟁의" 항목들의 개별 사례를 근거로 이슈를 추정해도 됩니다 — 다만 그 문장이 공식 통계가 아니라 언론 보도 사례를 종합한 추정이라는 점을 "(추정)" 또는 "~로 추산된다"처럼 명확히 밝히고, 실제로 검색된 개별 사례 기사를 srcUrl로 붙이세요. 근거 사례가 검색 데이터에 전혀 없다면 이 추정 자체를 만들지 마세요.
 톤은 최대한 중립적으로 작성하세요 — 특히 기술(AI) 관련 내용은 도입·효율 등 긍정적 측면과 편향·반발·감원 명분화 등 우려되는 측면을 같은 비중으로 다루세요.
 claims(문구)는 반드시 검색 데이터에 있는 구체적 사실·수치 문장으로 작성하고, 그 문구 바로 옆에 실제로 그 내용을 다룬 자료의 srcName(매체/채널명 + 제목 요약)과 srcUrl을 붙이세요. 근거가 불확실한 문구는 만들지 마세요.
 insight(시사점) 필드는 claims를 바탕으로 한 편집자의 해석이므로 출처를 붙이지 않습니다.`;
@@ -191,7 +213,9 @@ const PILLAR_TAIL_SCHEMA = `"insight": "이 섹션의 시사점 1~2문장(출처
   "keywords": ["키워드1", "키워드2", "키워드3", "키워드4"]`;
 
 // ─────────────────────────────────────────────────────────
-// STEP 2A: meta + stats + pillar "issue" (채용·평가·보상)
+// STEP 2A: meta + pillar "issue" (채용·평가·보상)
+// (예전엔 여기서 "stats" 5개도 LLM이 지어냈지만, 이제 핵심 지표 대시보드는
+//  실제 수집 건수를 코드로 직접 세어 만들기 때문에 이 파트에서 만들 필요가 없습니다.)
 // ─────────────────────────────────────────────────────────
 const PART_A_SYSTEM = `${COMMON_RULES}
 
@@ -201,13 +225,6 @@ const PART_A_SYSTEM = `${COMMON_RULES}
     "headline": "이번 보고서 헤드라인 한 줄(중립적 톤, 20자 내외로 짧게 — 긴 문장은 제목에서 단어가 어색하게 줄바꿈될 수 있으니 피할 것)",
     "subheadline": "핵심 요약 2문장. 최근 1~2주 이슈를 다룬다는 점과, 기술 변화의 성과·우려를 함께 짚는다는 점을 포함"
   },
-  "stats": [
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명(가능하면 날짜 포함)", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "tech" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "work" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "issue" },
-    { "num": "실제수치", "desc": "지표명", "change": "변화 설명", "srcName": "매체명", "srcUrl": "https://실제URL", "color": "work" }
-  ],
   "pillar": {
     "id": "issue", "color": "issue", "eyebrow": "PILLAR 01 · ISSUE BRIEFING", "icon": "🧭",
     "title": "최근 1~2주 HR 이슈 — 채용·평가·보상",
@@ -217,8 +234,8 @@ const PART_A_SYSTEM = `${COMMON_RULES}
   }
 }
 
-stats 정확히 5개(색상은 issue/tech/work/hrd 중에서 섞어서 배분 — 4가지 색을 고르게 쓸 것), cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
-stats나 cards에 자연스럽게 넣을 수 있다면 유튜브 영상 출처를 1개 이상 포함하세요.`;
+cards 2~3개(각 2~3개 claims), deepDive는 없으면 null 가능.
+검색 데이터에 수집된 항목이 거의 없더라도 "자료가 부족합니다" 같은 문장으로 헤드라인/본문을 채우지 마세요 — 있는 항목만으로 간결하게 작성하고, 항목이 정말 하나도 없는 카드는 만들지 마세요.`;
 
 // ─────────────────────────────────────────────────────────
 // STEP 2B: pillar "tech" (HR 기술 변화 — 서브그룹+타임라인, 균형·최신성 필수)
@@ -459,12 +476,22 @@ function renderPillar(p) {
 }
 
 function generateHTML(data) {
-  const statsHtml = (data.stats || []).map((s) => `
-    <div class="stat">
-      <div class="stat-num stat-${s.color || "issue"}">${esc(s.num)}</div>
-      <div class="stat-desc">${esc(s.desc)}</div>
-      <div class="stat-change">${esc(s.change)}</div>
-      ${src(s) ? `<a class="stat-src" href="${esc(src(s).url)}" target="_blank" rel="noopener">${esc(src(s).name)} ↗</a>` : ""}
+  // 예전엔 여기서 LLM이 지어낸 "트렌드 수치" 5개를 카드로 보여줬는데, 검색이
+  // 부실한 주에는 그 수치 자체가 무의미해지는 문제가 있었습니다. 대신 이번 호를
+  // 만들며 실제로 수집한 자료를 유형별로 센 값을 그대로 보여줍니다 — LLM이 만든
+  // 숫자가 아니라 collectSearchData()에서 코드로 직접 집계한 값입니다.
+  const dc = data.sourceCounts || {};
+  const dashTiles = [
+    { label: "총 수집 자료", num: dc.total ?? 0, color: "issue" },
+    { label: "기사·웹문서", num: dc.article ?? 0, color: "tech" },
+    { label: "유튜브 영상", num: dc.video ?? 0, color: "work" },
+    { label: "학술 연구·저널", num: dc.research ?? 0, color: "hrd" },
+    { label: "정부·공공기관 발표", num: dc.public ?? 0, color: "issue" },
+  ];
+  const dashboardHtml = dashTiles.map((t) => `
+    <div class="dash-tile">
+      <div class="dash-num dash-${t.color}">${t.num}</div>
+      <div class="dash-label">${esc(t.label)}</div>
     </div>`).join("");
 
   const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work, data.pillars?.hrd].filter(Boolean);
@@ -500,14 +527,13 @@ a{color:inherit;}
 .hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);margin-bottom:18px;font-weight:600;}
 .hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.3;text-wrap:balance;margin-bottom:20px;color:var(--ink);}
 .hero p{font-size:17.5px;line-height:1.85;color:#41454C;max-width:64ch;}
-.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px;}
-.stat{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;}
-.stat-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
-.stat-issue{color:var(--issue);}.stat-tech{color:var(--tech);}.stat-work{color:var(--work);}.stat-hrd{color:var(--hrd);}
-.stat-desc{font-size:13px;color:var(--muted);line-height:1.5;}
-.stat-change{font-family:var(--fm);font-size:11.5px;color:var(--muted);}
-.stat-src{font-family:var(--fm);font-size:11px;color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);margin-top:2px;width:fit-content;}
-.stat-src:hover{color:var(--ink);}
+.dashboard{margin-bottom:20px;}
+.dash-title{font-family:var(--fm);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
+.dash-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
+.dash-tile{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+.dash-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
+.dash-issue{color:var(--issue);}.dash-tech{color:var(--tech);}.dash-work{color:var(--work);}.dash-hrd{color:var(--hrd);}
+.dash-label{font-size:13px;color:var(--muted);line-height:1.5;}
 .pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
 .nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);}
 .nav-pill span{font-size:18px;}
@@ -607,7 +633,7 @@ a{color:inherit;}
 @media(max-width:680px){
   .wrap{padding:32px 18px 90px;}
   .hero{padding:32px 24px;border-radius:16px;}
-  .stats{grid-template-columns:repeat(2,1fr);}
+  .dash-grid{grid-template-columns:repeat(2,1fr);}
   .pillar-head{align-items:flex-start;}
   .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
   .pdf-btn span{display:none;}
@@ -641,7 +667,10 @@ a{color:inherit;}
     <h1>${esc(data.meta?.headline)}</h1>
     <p>${esc(data.meta?.subheadline)}</p>
   </div>
-  <div class="stats">${statsHtml}</div>
+  <div class="dashboard">
+    <div class="dash-title">이번 호 수집 자료 현황</div>
+    <div class="dash-grid">${dashboardHtml}</div>
+  </div>
   <nav class="pillar-nav">${navHtml}</nav>
   ${pillarsHtml}
   <section class="editor" id="review">
@@ -682,15 +711,16 @@ async function main() {
   console.log(`\n🚀 HR 트렌드 보고서 생성 시작`);
   console.log(`   Vol.${VOL} / ${DATE} / ${TOPIC}\n`);
 
-  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중 (최근 1~2주 우선, 기사+영상, 균형 수집)...");
-  searchDataGlobal = await withRetry(() => collectSearchData(), "웹검색");
+  console.log("🔍 Step 1: 웹검색으로 실제 데이터 수집 중 (주제별 개별 검색, 기사+영상+연구+공공 균형 수집)...");
+  const { searchDataText, sourceCounts } = await collectSearchData();
+  searchDataGlobal = searchDataText;
   console.log("");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
   await sleep(RATE_LIMIT_WAIT_MS);
   console.log("   ✅ 대기 완료\n");
 
-  console.log("📋 Step 2A: meta·stats·이슈 필러 생성...");
+  console.log("📋 Step 2A: meta·이슈 필러 생성...");
   const partA = await generateJSON(PART_A_SYSTEM, "Part A (이슈)");
 
   console.log("⏸  Rate limit 방지 대기 중 (65초)...");
@@ -710,7 +740,7 @@ async function main() {
   console.log("\n🔧 JSON 병합 중...");
   const merged = {
     meta: { ...(partA.meta || {}), vol: String(VOL), date: DATE },
-    stats: partA.stats || [],
+    sourceCounts,
     pillars: {
       issue: partA.pillar || null,
       tech: partB.pillar || null,
@@ -724,7 +754,7 @@ async function main() {
     generatedAt: getKoreanDateTime(),
   };
   const pillarCount = Object.values(merged.pillars).filter(Boolean).length;
-  console.log(`   📊 필러 ${pillarCount}/4개 · 통계 ${merged.stats.length}개`);
+  console.log(`   📊 필러 ${pillarCount}/4개 · 수집 자료 총 ${sourceCounts.total}건`);
 
   const html = generateHTML(merged);
   fs.writeFileSync(path.join(process.cwd(), "index.html"), html, "utf-8");
