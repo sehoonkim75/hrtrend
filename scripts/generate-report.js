@@ -36,9 +36,21 @@ function getKoreanDate() {
   const d = String(now.getDate()).padStart(2, "0");
   return `${y}.${m}.${d} (${days[now.getDay()]})`;
 }
+// 발행일(날짜 단위)과 별개로, "이 실행이 실제로 언제 생성됐는지"를 분·초 단위로
+// 페이지 하단에 남겨 배포가 최신인지 바로 확인할 수 있게 합니다.
+function getKoreanDateTime() {
+  const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  const hh = String(now.getHours()).padStart(2, "0");
+  const mm = String(now.getMinutes()).padStart(2, "0");
+  return `${y}.${m}.${d} ${hh}:${mm} KST`;
+}
 
 const VOL = getWeekNumber();
 const DATE = getKoreanDate();
+const GENERATED_AT = getKoreanDateTime();
 const YEAR = new Date().getFullYear();
 const MON = new Date().getMonth() + 1;
 const TOPIC = `${YEAR}년 ${MON}월 ${VOL}주차 HR 트렌드 (채용·평가·보상 / HR 기술 / 일하는 방식)`;
@@ -638,7 +650,7 @@ a{color:inherit;}
   </section>
   <div class="footer">
     <div class="footer-brand">HR 트렌드 주간 보고서</div>
-    <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web + Video Search + AI<br>${esc(data.meta?.date || DATE)}</div>
+    <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web + Video Search + AI<br>${esc(data.meta?.date || DATE)}<br>생성 시각: ${esc(data.generatedAt || GENERATED_AT)}</div>
   </div>
 </div>
 <button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
@@ -706,6 +718,10 @@ async function main() {
       hrd: partC.pillars?.hrd || null,
     },
     overallReview: partC.overallReview || "",
+    // 파이프라인 전체(검색 + 3회 생성 + 대기)가 끝난 실제 완료 시각 —
+    // 모듈 로드 시점(GENERATED_AT)이 아니라 지금 다시 계산해서 실제 반영 시각과
+    // 최대한 가깝게 맞춥니다.
+    generatedAt: getKoreanDateTime(),
   };
   const pillarCount = Object.values(merged.pillars).filter(Boolean).length;
   console.log(`   📊 필러 ${pillarCount}/4개 · 통계 ${merged.stats.length}개`);
