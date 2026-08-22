@@ -32,11 +32,16 @@ jobs:
         run: node scripts/generate-report.js
 
       - name: commit-and-push
+        # main으로 하드코딩하지 않고, 이 실행을 트리거한 브랜치로 push합니다
+        # (schedule은 항상 main이지만, workflow_dispatch로 다른 브랜치를 골라
+        # 수동 실행할 수도 있으므로 항상 맞는 대상으로 push되도록 함).
+        env:
+          TARGET_BRANCH: ${{ github.ref_name }}
         run: |
           git config user.name "HR Report Bot"
           git config user.email "bot@github.com"
           git add index.html
           git diff --staged --quiet && echo "no changes" && exit 0
           git commit -m "auto: weekly hr report $(date +'%Y-%m-%d')"
-          git pull --rebase origin main
-          git push origin main
+          git pull --rebase origin "$TARGET_BRANCH"
+          git push origin "HEAD:$TARGET_BRANCH"
