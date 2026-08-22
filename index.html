@@ -32,23 +32,35 @@ a{color:inherit;}
 .dash-title{font-family:var(--fm);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
 .dash-total{font-size:14.5px;color:var(--muted);white-space:nowrap;}
 .dash-total strong{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--issue);}
-.dash-row{margin-bottom:16px;}
+.dash-row{margin-bottom:18px;}
 .dash-row:last-child{margin-bottom:0;}
-.dash-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;}
-.dash-label{font-size:14px;color:var(--muted);white-space:nowrap;}
+.dash-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px;}
+.dash-label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;}
+.dash-icon{font-size:16px;}
 .dash-num{font-family:var(--fm);font-size:13.5px;font-weight:700;color:var(--ink);flex-shrink:0;white-space:nowrap;}
-.dash-track{width:100%;background:var(--chip-bg);height:11px;border-radius:6px;overflow:hidden;}
-.dash-fill{height:100%;border-radius:6px;}
-.dash-fill.dash-issue{background:var(--issue);}.dash-fill.dash-tech{background:var(--tech);}.dash-fill.dash-work{background:var(--work);}.dash-fill.dash-hrd{background:var(--hrd);}
-.pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
-.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);white-space:nowrap;}
-.nav-pill span{font-size:18px;}
-.nav-pill-issue{border-color:var(--issue);color:var(--issue);}
-.nav-pill-tech{border-color:var(--tech);color:var(--tech);}
-.nav-pill-work{border-color:var(--work);color:var(--work);}
-.nav-pill-hrd{border-color:var(--hrd);color:var(--hrd);}
+.dash-pct{color:var(--muted);font-weight:500;margin-left:6px;}
+.dash-track{width:100%;background:var(--chip-bg);height:14px;border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(36,39,44,.06);}
+.dash-fill{height:100%;border-radius:999px;transition:width .3s ease;}
+.dash-fill.dash-issue{background:linear-gradient(90deg,var(--issue),color-mix(in srgb,var(--issue) 75%,#fff));}
+.dash-fill.dash-tech{background:linear-gradient(90deg,var(--tech),color-mix(in srgb,var(--tech) 75%,#fff));}
+.dash-fill.dash-work{background:linear-gradient(90deg,var(--work),color-mix(in srgb,var(--work) 75%,#fff));}
+.dash-fill.dash-hrd{background:linear-gradient(90deg,var(--hrd),color-mix(in srgb,var(--hrd) 75%,#fff));}
+.pillar-nav{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:56px;}
+.nav-card{display:flex;flex-direction:column;gap:8px;text-decoration:none;background:var(--paper-raised);border:1px solid var(--divider);border-left:4px solid var(--divider);border-radius:14px;padding:16px 18px;transition:border-color .15s,box-shadow .15s,transform .15s;}
+.nav-card:hover{box-shadow:0 8px 22px rgba(36,39,44,.08);transform:translateY(-2px);}
+.nav-card-head{display:flex;align-items:center;gap:10px;}
+.nav-card-icon{font-size:22px;line-height:1;flex-shrink:0;}
+.nav-card-title{font-family:var(--fb);font-weight:800;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-card-desc{font-size:13px;line-height:1.65;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.nav-card-issue{border-left-color:var(--issue);}.nav-card-issue .nav-card-title{color:var(--issue);}.nav-card-issue:hover{border-color:var(--issue);}
+.nav-card-tech{border-left-color:var(--tech);}.nav-card-tech .nav-card-title{color:var(--tech);}.nav-card-tech:hover{border-color:var(--tech);}
+.nav-card-work{border-left-color:var(--work);}.nav-card-work .nav-card-title{color:var(--work);}.nav-card-work:hover{border-color:var(--work);}
+.nav-card-hrd{border-left-color:var(--hrd);}.nav-card-hrd .nav-card-title{color:var(--hrd);}.nav-card-hrd:hover{border-color:var(--hrd);}
 .pillar{margin-bottom:76px;scroll-margin-top:24px;}
-.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
+.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);list-style:none;cursor:pointer;}
+.pillar-head::-webkit-details-marker{display:none;}
+.pillar-chevron{margin-left:auto;color:var(--muted);font-size:22px;line-height:1;flex-shrink:0;transition:transform .2s;}
+details.pillar[open] .pillar-chevron{transform:rotate(180deg);}
 .pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
 .pillar-eyebrow{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
 .pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;color:var(--ink);}
@@ -140,25 +152,37 @@ a{color:inherit;}
   .wrap{padding:32px 18px 90px;}
   .hero{padding:32px 24px;border-radius:16px;}
   .dashboard{padding:20px 18px;}
+  .pillar-nav{grid-template-columns:1fr;}
   .pillar-head{align-items:flex-start;}
-  .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
+  .fab-stack{right:16px;bottom:16px;gap:10px;}
+  .fab-btn{width:42px;height:42px;}
+  .pdf-btn{padding:12px 16px;}
   .pdf-btn span{display:none;}
   .timeline li{flex-direction:column;gap:4px;}
 }
-.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
+.fab-stack{position:fixed;right:28px;bottom:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+.fab-btn{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:50%;background:#fff;color:var(--ink);border:1.5px solid var(--divider);cursor:pointer;box-shadow:0 6px 16px rgba(36,39,44,.14);transition:background .15s,color .15s,border-color .15s,transform .15s;}
+.fab-btn:hover{background:var(--issue);color:#fff;border-color:var(--issue);transform:translateY(-2px);}
+.fab-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
+.share-wrap{position:relative;}
+.share-menu{position:absolute;bottom:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--divider);border-radius:12px;box-shadow:0 10px 28px rgba(36,39,44,.16);padding:6px;display:flex;flex-direction:column;gap:2px;min-width:172px;}
+.share-menu[hidden]{display:none;}
+.share-opt{display:flex;align-items:center;gap:9px;font-family:var(--fb);font-size:13.5px;font-weight:600;color:var(--ink);text-decoration:none;background:none;border:none;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;width:100%;}
+.share-opt:hover{background:var(--chip-bg);}
+.pdf-btn{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
 .pdf-btn:hover{background:var(--issue);}
 .pdf-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{margin:14mm;}
   body{font-size:12.5px;orphans:3;widows:3;word-break:keep-all;overflow-wrap:break-word;}
-  .no-print,.pdf-btn,.pillar-nav{display:none !important;}
+  .no-print,.fab-stack,.pillar-nav{display:none !important;}
   .wrap{max-width:none;padding:0;}
   .pillar{margin-bottom:34px;break-inside:auto;}
   .pillar-head{break-after:avoid;page-break-after:avoid;}
   .card,.chart,.deepdive,.timeline,.stat,.insight{break-inside:avoid;page-break-inside:avoid;}
   .card-body,.dd-body{break-inside:avoid;page-break-inside:avoid;}
-  .deepdive .dd-chevron{display:none;}
+  .deepdive .dd-chevron,.pillar-chevron{display:none;}
   .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);word-break:break-all;}
   a{text-decoration:none;}
 }
@@ -180,43 +204,61 @@ a{color:inherit;}
     </div>
     <div class="dash-row">
       <div class="dash-top">
-        <span class="dash-label">기사·웹문서</span>
-        <span class="dash-num">79건</span>
+        <span class="dash-label"><span class="dash-icon">📰</span>기사·웹문서</span>
+        <span class="dash-num">79건<span class="dash-pct">89%</span></span>
       </div>
       <div class="dash-track"><div class="dash-fill dash-tech" style="width:100%"></div></div>
     </div>
     <div class="dash-row">
       <div class="dash-top">
-        <span class="dash-label">유튜브 영상</span>
-        <span class="dash-num">0건</span>
+        <span class="dash-label"><span class="dash-icon">🎥</span>미디어(영상)</span>
+        <span class="dash-num">0건<span class="dash-pct">0%</span></span>
       </div>
       <div class="dash-track"><div class="dash-fill dash-work" style="width:0%"></div></div>
     </div>
     <div class="dash-row">
       <div class="dash-top">
-        <span class="dash-label">학술 연구·저널</span>
-        <span class="dash-num">5건</span>
+        <span class="dash-label"><span class="dash-icon">🎓</span>학술 연구·저널</span>
+        <span class="dash-num">5건<span class="dash-pct">6%</span></span>
       </div>
       <div class="dash-track"><div class="dash-fill dash-hrd" style="width:6.329113924050633%"></div></div>
     </div>
     <div class="dash-row">
       <div class="dash-top">
-        <span class="dash-label">정부·공공 발표</span>
-        <span class="dash-num">5건</span>
+        <span class="dash-label"><span class="dash-icon">🏛️</span>정부·공공 발표</span>
+        <span class="dash-num">5건<span class="dash-pct">6%</span></span>
       </div>
       <div class="dash-track"><div class="dash-fill dash-issue" style="width:6.329113924050633%"></div></div>
     </div>
   </div>
-  <nav class="pillar-nav"><a class="nav-pill nav-pill-issue" href="#issue"><span>🧭</span>채용·평가·보상</a><a class="nav-pill nav-pill-tech" href="#tech"><span>🤖</span>HR 기술 변화 리뷰</a><a class="nav-pill nav-pill-work" href="#work"><span>🧭</span>일하는 방식 변화 리뷰</a><a class="nav-pill nav-pill-hrd" href="#hrd"><span>🎓</span>교육개발 변화 리뷰</a></nav>
-  
-  <section class="pillar" id="issue">
-    <header class="pillar-head pillar-head-issue">
+  <nav class="pillar-nav">
+    <a class="nav-card nav-card-issue" href="#issue">
+    <div class="nav-card-head"><span class="nav-card-icon">🧭</span><span class="nav-card-title">채용·평가·보상</span></div>
+    <p class="nav-card-desc">최근 AI의 빠른 확산과 임금 관련 노사 갈등이 동시에 두드러지며, 기술 혁신에 따른 효율성과 노동자의 불안이 맞물려 있다.</p>
+  </a>
+    <a class="nav-card nav-card-tech" href="#tech">
+    <div class="nav-card-head"><span class="nav-card-icon">🤖</span><span class="nav-card-title">HR 기술 변화 리뷰</span></div>
+    <p class="nav-card-desc">이 섹션은 2026년 8월 중순 기준 최근 2주 내외 국내외 실제 조사·보도 중심으로 기술 변화와 그 영향, 리스크, 규제 현황을 담고 있습니다.</p>
+  </a>
+    <a class="nav-card nav-card-work" href="#work">
+    <div class="nav-card-head"><span class="nav-card-icon">🧭</span><span class="nav-card-title">일하는 방식 변화 리뷰</span></div>
+    <p class="nav-card-desc">최근 1~2주간 국내 노동시장은 주 4.5일제, AI 관련 감원 및 일자리 재편, 노사 임단협 쟁의 등이 주요 이슈로 부상했다. AI 기술 도입에 따른 신입 채용 축소와 기존 인력 구조조정 논란도 동시에 표출됐다.</p>
+  </a>
+    <a class="nav-card nav-card-hrd" href="#hrd">
+    <div class="nav-card-head"><span class="nav-card-icon">🎓</span><span class="nav-card-title">교육개발 변화 리뷰</span></div>
+    <p class="nav-card-desc">2026년 기업 교육 우선순위는 AI 리터러시와 리스킬링으로 집약된다. 예산은 보수적이나, AI 도구와 LXP 등 플랫폼·솔루션 도입이 주목받으며 실행과 효과 간 차이가 과제로 남는다.</p>
+  </a>
+  </nav>
+
+  <details class="pillar" id="issue" open>
+    <summary class="pillar-head pillar-head-issue">
       <span class="pillar-icon">🧭</span>
       <div>
         <div class="pillar-eyebrow">PILLAR 01 · ISSUE BRIEFING</div>
         <h2>최근 1~2주 HR 이슈 — 채용·평가·보상</h2>
       </div>
-    </header>
+      <span class="pillar-chevron" aria-hidden="true">⌄</span>
+    </summary>
     <p class="pillar-framing">최근 AI의 빠른 확산과 임금 관련 노사 갈등이 동시에 두드러지며, 기술 혁신에 따른 효율성과 노동자의 불안이 맞물려 있다.</p>
     
     <div class="card-stack">
@@ -243,15 +285,16 @@ a{color:inherit;}
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
       <ul><li>🔗 <a href="https://ibiz.inews24.com/view/1996345?utm_source=openai" target="_blank" rel="noopener">iNews24 · 100인 미만 기업, AI에 일자리 직격탄…AI 도입률 5배 ↑·신입 채용 비중 ↓</a></li><li>🔗 <a href="https://www.newswire.co.kr/newsRead.php?no=1040100&utm_source=openai" target="_blank" rel="noopener">뉴스와이어 · 직능연, 기업의 AI 활용 확산과 기업 간 격차 분석</a></li><li>🔗 <a href="https://www.yna.co.kr/view/AKR20260819070400003?utm_source=openai" target="_blank" rel="noopener">연합뉴스 · 현대차 올해 파업으로 6만대 생산차질 예상…포스코도 하투</a></li><li>🔗 <a href="https://www.edaily.co.kr/News/Read?newsId=05149606645544368&utm_source=openai" target="_blank" rel="noopener">이데일리 · 포스코 전면파업 기로…이달 18일 운명의 날</a></li><li>🔗 <a href="https://go.seoul.co.kr/news/newsView.php?id=20260818500210&utm_source=openai" target="_blank" rel="noopener">서울신문 · 여수산단 플랜트 건설 노사, 임단협 타결…상생 다짐</a></li><li>🔗 <a href="https://ckkachu.blogspot.com/2026/08/ai-hiring-fairness-algorithm-bias.html?utm_source=openai" target="_blank" rel="noopener">CK LAB 블로그 · AI 채용은 사람보다 공정할까</a></li><li>🔗 <a href="https://www.yna.co.kr/view/AKR20260817033400003?utm_source=openai" target="_blank" rel="noopener">연합뉴스 · 구직 청년 64% '희망 직무 5년 내 AI로 대체·축소될 것'</a></li><li>🔗 <a href="https://www.nature.com/articles/s41598-026-53457-9?utm_source=openai" target="_blank" rel="noopener">Scientific Reports · Multi‑task adversarial learning detects intersectional algorithmic bias in AI recruitment systems</a></li></ul>
     </div>
-  </section>
-  <section class="pillar" id="tech">
-    <header class="pillar-head pillar-head-tech">
+  </details>
+  <details class="pillar" id="tech" open>
+    <summary class="pillar-head pillar-head-tech">
       <span class="pillar-icon">🤖</span>
       <div>
         <div class="pillar-eyebrow">PILLAR 02 · TECH REVIEW</div>
         <h2>HR 기술 변화 리뷰</h2>
       </div>
-    </header>
+      <span class="pillar-chevron" aria-hidden="true">⌄</span>
+    </summary>
     <p class="pillar-framing">이 섹션은 2026년 8월 중순 기준 최근 2주 내외 국내외 실제 조사·보도 중심으로 기술 변화와 그 영향, 리스크, 규제 현황을 담고 있습니다.</p>
     
     <div class="timeline">
@@ -367,15 +410,16 @@ a{color:inherit;}
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
       <ul><li>🔗 <a href="https://ibiz.inews24.com/view/1996345?utm_source=openai" target="_blank" rel="noopener">iNews24 · 소규모 기업 AI 도입과 채용 축소</a></li><li>🔗 <a href="https://www.newswire.co.kr/newsRead.php?no=1040100&utm_source=openai" target="_blank" rel="noopener">뉴스와이어 · 기업 규모 따른 AI 도입 격차</a></li><li>🔗 <a href="https://ckkachu.blogspot.com/2026/08/ai-hiring-fairness-algorithm-bias.html?utm_source=openai" target="_blank" rel="noopener">CK LAB 블로그 · AI 채용과 편향, 지원자 권리</a></li><li>🔗 <a href="https://www.nature.com/articles/s41598-026-53457-9?utm_source=openai" target="_blank" rel="noopener">Scientific Reports · AI 채용 교차 편향 연구</a></li><li>🔗 <a href="https://news.nate.com/view/20260810n01232?utm_source=openai" target="_blank" rel="noopener">이데일리 · AI가 빼앗는 청년 ‘첫 경력’</a></li><li>🔗 <a href="https://www.yna.co.kr/view/AKR20260817033400003?utm_source=openai" target="_blank" rel="noopener">연합뉴스 · 청년 64% AI 대체 우려</a></li><li>🔗 <a href="https://peoplekorea.press/ko-kr/articles/3982354?utm_source=openai" target="_blank" rel="noopener">peoplekorea.press · AI 부메랑과 재고용</a></li><li>🔗 <a href="https://d1ai435zjuj0jf.cloudfront.net/compensation-trends/news-know-july-2026?utm_source=openai" target="_blank" rel="noopener">Payscale · 7월 글로벌 고용·보상 법령 동향</a></li><li>🔗 <a href="https://moel.go.kr/news/enews/report/enewsView.do?news_seq=19315&utm_source=openai" target="_blank" rel="noopener">고용노동부 · 비정규직 처우개선 발표</a></li><li>🔗 <a href="https://www.sciencedirect.com/science/article/pii/S2590291125008113?utm_source=openai" target="_blank" rel="noopener">Social Sciences & Humanities Open · AI 채용 차별적 리스크 연구</a></li><li>🔗 <a href="https://www.computerworld.com/article/3816579/tech-layoffs-this-year-a-timeline.html?utm_source=openai" target="_blank" rel="noopener">Computerworld · 2026년 기술업계 감원 타임라인</a></li><li>🔗 <a href="https://www.yna.co.kr/amp/view/AKR20260707004000091?utm_source=openai" target="_blank" rel="noopener">연합뉴스 · MS 4,800명 감원</a></li></ul>
     </div>
-  </section>
-  <section class="pillar" id="work">
-    <header class="pillar-head pillar-head-work">
+  </details>
+  <details class="pillar" id="work" open>
+    <summary class="pillar-head pillar-head-work">
       <span class="pillar-icon">🧭</span>
       <div>
         <div class="pillar-eyebrow">PILLAR 03 · WORK REVIEW</div>
         <h2>직무 · 일하는 방식 변화 리뷰</h2>
       </div>
-    </header>
+      <span class="pillar-chevron" aria-hidden="true">⌄</span>
+    </summary>
     <p class="pillar-framing">최근 1~2주간 국내 노동시장은 주 4.5일제, AI 관련 감원 및 일자리 재편, 노사 임단협 쟁의 등이 주요 이슈로 부상했다. AI 기술 도입에 따른 신입 채용 축소와 기존 인력 구조조정 논란도 동시에 표출됐다.</p>
     
     <div class="card-stack">
@@ -408,15 +452,16 @@ a{color:inherit;}
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
       <ul><li>🔗 <a href="https://www2.edaily.co.kr/News/Read?mediaCodeNo=257&newsId=01748246645549944&utm_source=openai" target="_blank" rel="noopener">이데일리 · 금융노조, 28일 투쟁 결의</a></li><li>🔗 <a href="https://www.fnnews.com/news/202607221435130349?utm_source=openai" target="_blank" rel="noopener">파이낸셜뉴스 · 여권 당권주자들, ‘주4.5일제’ 추진 약속</a></li><li>🔗 <a href="https://www.korea.kr/news/policyFocusView.do?newsId=148956270&pWise=main&pWiseMain=F2&pkgId=49500823&utm_source=openai" target="_blank" rel="noopener">정책브리핑(공공) · 지속가능한 사회로의 전환…'주 4.5일제'가 여는 미래</a></li><li>🔗 <a href="https://techcrunch.com/2026/07/06/the-running-list-major-tech-layoffs-in-2026-where-employers-cited-ai/?utm_source=openai" target="_blank" rel="noopener">TechCrunch · Every major tech layoff in 2026 that has name‑checked AI</a></li><li>🔗 <a href="https://zdnet.co.kr/view/?no=20260805142819&utm_source=openai" target="_blank" rel="noopener">ZDNet Korea · 웍스피어 비핵심 사업·인력 구조조정</a></li><li>🔗 <a href="https://apnews.com/article/65f9944fa25306bf5c975dd94805731e?utm_source=openai" target="_blank" rel="noopener">AP News · From Cisco to Block, more companies are pointing to AI when unveiling job cuts</a></li><li>🔗 <a href="https://www.yna.co.kr/view/AKR20260819070400003?utm_source=openai" target="_blank" rel="noopener">연합뉴스 · 현대차 올해 파업으로 6만대 생산차질 예상…포스코도 하투</a></li><li>🔗 <a href="https://www.edaily.co.kr/News/Read?newsId=05149606645544368&utm_source=openai" target="_blank" rel="noopener">이데일리 · 포스코 전면파업 기로…이달 18일 운명의 날</a></li><li>🔗 <a href="https://peoplekorea.press/ko-kr/articles/3982354?utm_source=openai" target="_blank" rel="noopener">peoplekorea.press</a></li></ul>
     </div>
-  </section>
-  <section class="pillar" id="hrd">
-    <header class="pillar-head pillar-head-hrd">
+  </details>
+  <details class="pillar" id="hrd" open>
+    <summary class="pillar-head pillar-head-hrd">
       <span class="pillar-icon">🎓</span>
       <div>
         <div class="pillar-eyebrow">PILLAR 04 · HRD REVIEW</div>
         <h2>HRD · 교육개발 변화 리뷰</h2>
       </div>
-    </header>
+      <span class="pillar-chevron" aria-hidden="true">⌄</span>
+    </summary>
     <p class="pillar-framing">2026년 기업 교육 우선순위는 AI 리터러시와 리스킬링으로 집약된다. 예산은 보수적이나, AI 도구와 LXP 등 플랫폼·솔루션 도입이 주목받으며 실행과 효과 간 차이가 과제로 남는다.</p>
     
     <div class="card-stack">
@@ -443,7 +488,7 @@ a{color:inherit;}
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
       <ul><li>🔗 <a href="https://m.hunet.co.kr/Hrd/Contents/TrendDetail?board_seq=342&page_no=1&search_text=&type_code=0&utm_source=openai" target="_blank" rel="noopener">휴넷 HRD 트렌드 · 2026년 전망</a></li><li>🔗 <a href="https://kitim.org/ko/blog/sme-upskilling-reskilling-ai-era-workforce-development-framework-2026?utm_source=openai" target="_blank" rel="noopener">한국기술혁신경영연구원 블로그 · Task-Skill Matrix 진단</a></li><li>🔗 <a href="https://blog.uphone.app/ko/2026-hrd-%ED%8A%B8%EB%A0%8C%EB%93%9C-%EB%A6%AC%EC%8A%A4%ED%82%AC%EB%A7%81%C2%B7%EC%97%85%EC%8A%A4%ED%82%AC%EB%A7%81%EA%B3%BC-%EA%B8%80%EB%A1%9C%EB%B2%8C-%EC%97%AD%EB%9F%89-%EA%B5%90%EC%9C%A1/?utm_source=openai" target="_blank" rel="noopener">UPHONE 블로그 · HR Katha 조사</a></li><li>🔗 <a href="https://www.mpm.go.kr/mpm/info/infoEdu/digitalEdu/?utm_source=openai" target="_blank" rel="noopener">인사혁신처(공공) · 인재개발 지능형 오픈 플랫폼</a></li><li>🔗 <a href="https://www.kma.or.kr/kr/usrs/eduRegMgnt/eduRegMgntForm.do?cateNm=abtStudioLxp&mkey=79&utm_source=openai" target="_blank" rel="noopener">한국능률협회 · stud.io LXP</a></li><li>🔗 <a href="https://zdnet.co.kr/view/?no=20260521085731&utm_source=openai" target="_blank" rel="noopener">ZDNet Korea · 엘리스LXP, AI헬피챗 실증사업 선정</a></li></ul>
     </div>
-  </section>
+  </details>
   <section class="editor" id="review">
     <div class="editor-label">전체 리뷰</div>
     <p>최근 1~2주(2026년 8월 중순~22일) HR 트렌드는 AI와 고용구조 재편, 주 4.5일제 도입 논의, 임금 협상 갈등, HRD의 AI 중심화 등 네 축에서 동시다발적 변화를 보였다. AI 도입으로 인한 감원과 신입 채용 축소, 그리고 임금과 근무방식의 공식·비공식 갈등 신호가 혼재되고 있다. 교육 개발 현장에서는 AI 교육이 예산 확대의 동인이지만, 실행력 부족과 직무적합성 한계가 반복되고 있다. 신기술 도입의 효과와 우려가 동시에 부각되고 있으며 지속 가능한 일·학습 환경 구축이 향후 핵심 과제로 주목된다.</p>
@@ -453,10 +498,24 @@ a{color:inherit;}
     <div class="footer-meta">2026 Vol.35 · Web + Video Search + AI<br>2026.08.22 (토)<br>생성 시각: 2026.08.22 09:50 KST</div>
   </div>
 </div>
-<button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-  <span>PDF로 저장</span>
-</button>
+<div class="fab-stack no-print">
+  <button class="fab-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로 가기" title="맨 위로 가기">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  </button>
+  <div class="share-wrap">
+    <button class="fab-btn" id="shareBtn" aria-label="공유하기" aria-haspopup="true" aria-expanded="false" title="공유하기">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9"/><path d="M8.6 13.5l6.8 3.9"/></svg>
+    </button>
+    <div class="share-menu" id="shareMenu" hidden>
+      <button class="share-opt" id="copyLinkBtn" type="button"><span>🔗</span><span id="copyLinkLabel">링크 복사</span></button>
+      <button class="share-opt" id="emailShareBtn" type="button"><span>✉️</span><span>이메일로 공유</span></button>
+    </div>
+  </div>
+  <button class="pdf-btn" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+    <span>PDF로 저장</span>
+  </button>
+</div>
 <script>
 (function(){
   window.addEventListener("beforeprint", function(){
@@ -469,6 +528,62 @@ a{color:inherit;}
     document.querySelectorAll("details").forEach(function(d){
       d.open = d.dataset.wasOpen === "1";
     });
+  });
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  var shareBtn = document.getElementById("shareBtn");
+  var shareMenu = document.getElementById("shareMenu");
+  var copyLinkBtn = document.getElementById("copyLinkBtn");
+  var copyLinkLabel = document.getElementById("copyLinkLabel");
+  var emailShareBtn = document.getElementById("emailShareBtn");
+  if (!shareBtn || !shareMenu) return;
+
+  function closeMenu(){
+    shareMenu.hidden = true;
+    shareBtn.setAttribute("aria-expanded", "false");
+  }
+  shareBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    var willOpen = shareMenu.hidden;
+    shareMenu.hidden = !willOpen;
+    shareBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  });
+  document.addEventListener("click", function(e){
+    if (!shareMenu.hidden && !e.target.closest(".share-wrap")) closeMenu();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") closeMenu();
+  });
+  copyLinkBtn.addEventListener("click", function(){
+    var url = location.href;
+    var restore = copyLinkLabel.textContent;
+    var onDone = function(){
+      copyLinkLabel.textContent = "복사됨!";
+      setTimeout(function(){ copyLinkLabel.textContent = restore; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(onDone).catch(function(){ fallbackCopy(url); onDone(); });
+    } else {
+      fallbackCopy(url);
+      onDone();
+    }
+    closeMenu();
+  });
+  emailShareBtn.addEventListener("click", function(){
+    var subject = encodeURIComponent(document.title);
+    var body = encodeURIComponent(document.title + "\n" + location.href);
+    location.href = "mailto:?subject=" + subject + "&body=" + body;
+    closeMenu();
   });
 })();
 </script>
