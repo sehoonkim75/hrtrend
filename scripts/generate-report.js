@@ -481,17 +481,21 @@ function generateHTML(data) {
   // 만들며 실제로 수집한 자료를 유형별로 센 값을 그대로 보여줍니다 — LLM이 만든
   // 숫자가 아니라 collectSearchData()에서 코드로 직접 집계한 값입니다.
   const dc = data.sourceCounts || {};
-  const dashTiles = [
-    { label: "총 수집 자료", num: dc.total ?? 0, color: "issue" },
+  const dashTotal = dc.total ?? 0;
+  const dashBars = [
     { label: "기사·웹문서", num: dc.article ?? 0, color: "tech" },
     { label: "유튜브 영상", num: dc.video ?? 0, color: "work" },
     { label: "학술 연구·저널", num: dc.research ?? 0, color: "hrd" },
-    { label: "정부·공공기관 발표", num: dc.public ?? 0, color: "issue" },
+    { label: "정부·공공 발표", num: dc.public ?? 0, color: "issue" },
   ];
-  const dashboardHtml = dashTiles.map((t) => `
-    <div class="dash-tile">
-      <div class="dash-num dash-${t.color}">${t.num}</div>
-      <div class="dash-label">${esc(t.label)}</div>
+  const dashMax = Math.max(1, ...dashBars.map((d) => d.num));
+  const dashboardHtml = dashBars.map((d) => `
+    <div class="dash-row">
+      <div class="dash-top">
+        <span class="dash-label">${esc(d.label)}</span>
+        <span class="dash-num">${d.num}건</span>
+      </div>
+      <div class="dash-track"><div class="dash-fill dash-${d.color}" style="width:${Math.min((d.num / dashMax) * 100, 100)}%"></div></div>
     </div>`).join("");
 
   const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work, data.pillars?.hrd].filter(Boolean);
@@ -526,16 +530,22 @@ a{color:inherit;}
 .hero{background:var(--issue-tint);border:1px solid var(--issue-tint-strong);border-top:4px solid var(--issue);color:var(--ink);border-radius:16px;padding:44px 40px;margin-bottom:44px;}
 .hero-eyebrow{font-family:var(--fm);font-size:13px;letter-spacing:3px;text-transform:uppercase;color:var(--issue);margin-bottom:18px;font-weight:600;}
 .hero h1{font-family:var(--fd);font-weight:700;font-size:clamp(30px,4.6vw,46px);line-height:1.3;text-wrap:balance;margin-bottom:20px;color:var(--ink);}
-.hero p{font-size:17.5px;line-height:1.85;color:#41454C;max-width:64ch;}
-.dashboard{margin-bottom:20px;}
-.dash-title{font-family:var(--fm);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px;}
-.dash-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;}
-.dash-tile{background:var(--paper-raised);border:1px solid var(--divider);border-radius:14px;padding:20px 16px;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
-.dash-num{font-family:var(--fd);font-weight:700;font-size:28px;line-height:1;}
-.dash-issue{color:var(--issue);}.dash-tech{color:var(--tech);}.dash-work{color:var(--work);}.dash-hrd{color:var(--hrd);}
-.dash-label{font-size:13px;color:var(--muted);line-height:1.5;}
+.hero p{font-size:17.5px;line-height:1.85;color:#41454C;}
+.dashboard{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;margin-bottom:20px;}
+.dash-header{display:flex;align-items:baseline;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:20px;}
+.dash-title{font-family:var(--fm);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.dash-total{font-size:14.5px;color:var(--muted);white-space:nowrap;}
+.dash-total strong{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--issue);}
+.dash-row{margin-bottom:16px;}
+.dash-row:last-child{margin-bottom:0;}
+.dash-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;}
+.dash-label{font-size:14px;color:var(--muted);white-space:nowrap;}
+.dash-num{font-family:var(--fm);font-size:13.5px;font-weight:700;color:var(--ink);flex-shrink:0;white-space:nowrap;}
+.dash-track{width:100%;background:var(--chip-bg);height:11px;border-radius:6px;overflow:hidden;}
+.dash-fill{height:100%;border-radius:6px;}
+.dash-fill.dash-issue{background:var(--issue);}.dash-fill.dash-tech{background:var(--tech);}.dash-fill.dash-work{background:var(--work);}.dash-fill.dash-hrd{background:var(--hrd);}
 .pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
-.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);}
+.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);white-space:nowrap;}
 .nav-pill span{font-size:18px;}
 .nav-pill-issue{border-color:var(--issue);color:var(--issue);}
 .nav-pill-tech{border-color:var(--tech);color:var(--tech);}
@@ -550,7 +560,7 @@ a{color:inherit;}
 .pillar-head-tech .pillar-eyebrow{color:var(--tech);}
 .pillar-head-work .pillar-eyebrow{color:var(--work);}
 .pillar-head-hrd .pillar-eyebrow{color:var(--hrd);}
-.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;max-width:66ch;}
+.pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;}
 .timeline{background:var(--paper-sunken);border:1px solid var(--divider);border-radius:16px;padding:22px 26px;margin-bottom:24px;}
 .timeline-title{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
 .timeline ol{list-style:none;display:flex;flex-direction:column;gap:12px;}
@@ -574,7 +584,7 @@ a{color:inherit;}
 .card-head h4{font-family:var(--fb);font-weight:800;font-size:19px;line-height:1.4;color:var(--ink);}
 .card-body{display:flex;flex-direction:column;gap:10px;}
 .claim{font-size:16px;line-height:1.8;color:var(--ink);}
-.tag{display:inline-block;font-family:var(--fm);font-size:12px;font-weight:500;text-decoration:none;padding:2px 9px;border-radius:6px;white-space:nowrap;margin-left:2px;border-bottom:none;}
+.tag{display:inline-block;font-family:var(--fm);font-size:12px;font-weight:500;text-decoration:none;padding:2px 9px;border-radius:6px;white-space:normal;overflow-wrap:break-word;max-width:100%;margin-left:2px;border-bottom:none;line-height:1.6;}
 .tag-issue{background:var(--issue-tint);color:var(--issue);}
 .tag-tech{background:var(--tech-tint);color:var(--tech);}
 .tag-work{background:var(--work-tint);color:var(--work);}
@@ -633,7 +643,7 @@ a{color:inherit;}
 @media(max-width:680px){
   .wrap{padding:32px 18px 90px;}
   .hero{padding:32px 24px;border-radius:16px;}
-  .dash-grid{grid-template-columns:repeat(2,1fr);}
+  .dashboard{padding:20px 18px;}
   .pillar-head{align-items:flex-start;}
   .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
   .pdf-btn span{display:none;}
@@ -668,8 +678,11 @@ a{color:inherit;}
     <p>${esc(data.meta?.subheadline)}</p>
   </div>
   <div class="dashboard">
-    <div class="dash-title">이번 호 수집 자료 현황</div>
-    <div class="dash-grid">${dashboardHtml}</div>
+    <div class="dash-header">
+      <div class="dash-title">이번 호 수집 자료 현황</div>
+      <div class="dash-total">총 <strong>${dashTotal}</strong>건</div>
+    </div>
+    ${dashboardHtml}
   </div>
   <nav class="pillar-nav">${navHtml}</nav>
   ${pillarsHtml}
