@@ -449,15 +449,19 @@ function dedupeSources(p) {
 function renderPillar(p) {
   if (!p || !p.id) return "";
   const cardsBlock = p.groups ? renderGroups(p.groups, p.color) : `<div class="card-stack">${renderCards(p.cards, p.color)}</div>`;
+  // 섹션 전체를 <details>로 감싸 접었다 펼 수 있게 합니다. 기본값은 펼침(open) —
+  // beforeprint/afterprint 핸들러가 이미 모든 <details>를 인쇄 시 강제로 열어주므로
+  // PDF 저장 동작은 그대로 유지됩니다.
   return `
-  <section class="pillar" id="${esc(p.id)}">
-    <header class="pillar-head pillar-head-${p.color}">
+  <details class="pillar" id="${esc(p.id)}" open>
+    <summary class="pillar-head pillar-head-${p.color}">
       <span class="pillar-icon">${esc(p.icon)}</span>
       <div>
         <div class="pillar-eyebrow">${esc(p.eyebrow)}</div>
         <h2>${esc(p.title)}</h2>
       </div>
-    </header>
+      <span class="pillar-chevron" aria-hidden="true">⌄</span>
+    </summary>
     <p class="pillar-framing">${esc(p.framing)}</p>
     ${renderTimeline(p.timeline, p.color)}
     ${cardsBlock}
@@ -472,7 +476,7 @@ function renderPillar(p) {
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
       <ul>${dedupeSources(p).map((s) => `<li>${isVideo(s.url) ? "🎥" : "🔗"} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
     </div>
-  </section>`;
+  </details>`;
 }
 
 function generateHTML(data) {
@@ -483,23 +487,34 @@ function generateHTML(data) {
   const dc = data.sourceCounts || {};
   const dashTotal = dc.total ?? 0;
   const dashBars = [
-    { label: "기사·웹문서", num: dc.article ?? 0, color: "tech" },
-    { label: "유튜브 영상", num: dc.video ?? 0, color: "work" },
-    { label: "학술 연구·저널", num: dc.research ?? 0, color: "hrd" },
-    { label: "정부·공공 발표", num: dc.public ?? 0, color: "issue" },
+    { label: "기사·웹문서", icon: "📰", num: dc.article ?? 0, color: "tech" },
+    { label: "미디어(영상)", icon: "🎥", num: dc.video ?? 0, color: "work" },
+    { label: "학술 연구·저널", icon: "🎓", num: dc.research ?? 0, color: "hrd" },
+    { label: "정부·공공 발표", icon: "🏛️", num: dc.public ?? 0, color: "issue" },
   ];
   const dashMax = Math.max(1, ...dashBars.map((d) => d.num));
-  const dashboardHtml = dashBars.map((d) => `
+  const dashboardHtml = dashBars.map((d) => {
+    const pct = dashTotal > 0 ? Math.round((d.num / dashTotal) * 100) : 0;
+    return `
     <div class="dash-row">
       <div class="dash-top">
-        <span class="dash-label">${esc(d.label)}</span>
-        <span class="dash-num">${d.num}건</span>
+        <span class="dash-label"><span class="dash-icon">${d.icon}</span>${esc(d.label)}</span>
+        <span class="dash-num">${d.num}건<span class="dash-pct">${pct}%</span></span>
       </div>
       <div class="dash-track"><div class="dash-fill dash-${d.color}" style="width:${Math.min((d.num / dashMax) * 100, 100)}%"></div></div>
-    </div>`).join("");
+    </div>`;
+  }).join("");
 
   const pillars = [data.pillars?.issue, data.pillars?.tech, data.pillars?.work, data.pillars?.hrd].filter(Boolean);
-  const navHtml = pillars.map((p) => `<a class="nav-pill nav-pill-${p.color}" href="#${esc(p.id)}"><span>${esc(p.icon)}</span>${esc((p.title || "").split(" — ").pop().split(" · ").pop())}</a>`).join("");
+  // 네비게이션을 "아이콘만 있는 알약" 대신 섹션별 2~3줄 요약이 붙은 카드로 구성합니다.
+  // 요약문은 이미 각 섹션이 갖고 있는 framing 문단을 그대로 재사용합니다.
+  const navHtml = pillars.map((p) => {
+    const shortTitle = esc((p.title || "").split(" — ").pop().split(" · ").pop());
+    return `<a class="nav-card nav-card-${p.color}" href="#${esc(p.id)}">
+    <div class="nav-card-head"><span class="nav-card-icon">${esc(p.icon)}</span><span class="nav-card-title">${shortTitle}</span></div>
+    <p class="nav-card-desc">${esc(p.framing || "")}</p>
+  </a>`;
+  }).join("");
   const pillarsHtml = pillars.map(renderPillar).join("");
 
   return `<!DOCTYPE html>
@@ -536,23 +551,35 @@ a{color:inherit;}
 .dash-title{font-family:var(--fm);font-size:11.5px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
 .dash-total{font-size:14.5px;color:var(--muted);white-space:nowrap;}
 .dash-total strong{font-family:var(--fd);font-size:22px;font-weight:700;color:var(--issue);}
-.dash-row{margin-bottom:16px;}
+.dash-row{margin-bottom:18px;}
 .dash-row:last-child{margin-bottom:0;}
-.dash-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px;}
-.dash-label{font-size:14px;color:var(--muted);white-space:nowrap;}
+.dash-top{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:9px;}
+.dash-label{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;}
+.dash-icon{font-size:16px;}
 .dash-num{font-family:var(--fm);font-size:13.5px;font-weight:700;color:var(--ink);flex-shrink:0;white-space:nowrap;}
-.dash-track{width:100%;background:var(--chip-bg);height:11px;border-radius:6px;overflow:hidden;}
-.dash-fill{height:100%;border-radius:6px;}
-.dash-fill.dash-issue{background:var(--issue);}.dash-fill.dash-tech{background:var(--tech);}.dash-fill.dash-work{background:var(--work);}.dash-fill.dash-hrd{background:var(--hrd);}
-.pillar-nav{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:56px;}
-.nav-pill{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14.5px;padding:12px 20px;border-radius:999px;text-decoration:none;border:1.5px solid var(--divider);white-space:nowrap;}
-.nav-pill span{font-size:18px;}
-.nav-pill-issue{border-color:var(--issue);color:var(--issue);}
-.nav-pill-tech{border-color:var(--tech);color:var(--tech);}
-.nav-pill-work{border-color:var(--work);color:var(--work);}
-.nav-pill-hrd{border-color:var(--hrd);color:var(--hrd);}
+.dash-pct{color:var(--muted);font-weight:500;margin-left:6px;}
+.dash-track{width:100%;background:var(--chip-bg);height:14px;border-radius:999px;overflow:hidden;box-shadow:inset 0 1px 2px rgba(36,39,44,.06);}
+.dash-fill{height:100%;border-radius:999px;transition:width .3s ease;}
+.dash-fill.dash-issue{background:linear-gradient(90deg,var(--issue),color-mix(in srgb,var(--issue) 75%,#fff));}
+.dash-fill.dash-tech{background:linear-gradient(90deg,var(--tech),color-mix(in srgb,var(--tech) 75%,#fff));}
+.dash-fill.dash-work{background:linear-gradient(90deg,var(--work),color-mix(in srgb,var(--work) 75%,#fff));}
+.dash-fill.dash-hrd{background:linear-gradient(90deg,var(--hrd),color-mix(in srgb,var(--hrd) 75%,#fff));}
+.pillar-nav{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:56px;}
+.nav-card{display:flex;flex-direction:column;gap:8px;text-decoration:none;background:var(--paper-raised);border:1px solid var(--divider);border-left:4px solid var(--divider);border-radius:14px;padding:16px 18px;transition:border-color .15s,box-shadow .15s,transform .15s;}
+.nav-card:hover{box-shadow:0 8px 22px rgba(36,39,44,.08);transform:translateY(-2px);}
+.nav-card-head{display:flex;align-items:center;gap:10px;}
+.nav-card-icon{font-size:22px;line-height:1;flex-shrink:0;}
+.nav-card-title{font-family:var(--fb);font-weight:800;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.nav-card-desc{font-size:13px;line-height:1.65;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.nav-card-issue{border-left-color:var(--issue);}.nav-card-issue .nav-card-title{color:var(--issue);}.nav-card-issue:hover{border-color:var(--issue);}
+.nav-card-tech{border-left-color:var(--tech);}.nav-card-tech .nav-card-title{color:var(--tech);}.nav-card-tech:hover{border-color:var(--tech);}
+.nav-card-work{border-left-color:var(--work);}.nav-card-work .nav-card-title{color:var(--work);}.nav-card-work:hover{border-color:var(--work);}
+.nav-card-hrd{border-left-color:var(--hrd);}.nav-card-hrd .nav-card-title{color:var(--hrd);}.nav-card-hrd:hover{border-color:var(--hrd);}
 .pillar{margin-bottom:76px;scroll-margin-top:24px;}
-.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);}
+.pillar-head{display:flex;align-items:center;gap:18px;padding-bottom:22px;margin-bottom:22px;border-bottom:3px solid var(--divider);list-style:none;cursor:pointer;}
+.pillar-head::-webkit-details-marker{display:none;}
+.pillar-chevron{margin-left:auto;color:var(--muted);font-size:22px;line-height:1;flex-shrink:0;transition:transform .2s;}
+details.pillar[open] .pillar-chevron{transform:rotate(180deg);}
 .pillar-icon{font-size:36px;line-height:1;flex-shrink:0;}
 .pillar-eyebrow{font-family:var(--fm);font-size:12.5px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;}
 .pillar-head h2{font-family:var(--fd);font-weight:700;font-size:clamp(24px,3.4vw,32px);text-wrap:balance;color:var(--ink);}
@@ -644,25 +671,37 @@ a{color:inherit;}
   .wrap{padding:32px 18px 90px;}
   .hero{padding:32px 24px;border-radius:16px;}
   .dashboard{padding:20px 18px;}
+  .pillar-nav{grid-template-columns:1fr;}
   .pillar-head{align-items:flex-start;}
-  .pdf-btn{right:16px;bottom:16px;padding:12px 16px;}
+  .fab-stack{right:16px;bottom:16px;gap:10px;}
+  .fab-btn{width:42px;height:42px;}
+  .pdf-btn{padding:12px 16px;}
   .pdf-btn span{display:none;}
   .timeline li{flex-direction:column;gap:4px;}
 }
-.pdf-btn{position:fixed;right:28px;bottom:28px;display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
+.fab-stack{position:fixed;right:28px;bottom:28px;z-index:40;display:flex;flex-direction:column;align-items:flex-end;gap:12px;}
+.fab-btn{display:flex;align-items:center;justify-content:center;width:48px;height:48px;flex-shrink:0;border-radius:50%;background:#fff;color:var(--ink);border:1.5px solid var(--divider);cursor:pointer;box-shadow:0 6px 16px rgba(36,39,44,.14);transition:background .15s,color .15s,border-color .15s,transform .15s;}
+.fab-btn:hover{background:var(--issue);color:#fff;border-color:var(--issue);transform:translateY(-2px);}
+.fab-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
+.share-wrap{position:relative;}
+.share-menu{position:absolute;bottom:calc(100% + 10px);right:0;background:#fff;border:1px solid var(--divider);border-radius:12px;box-shadow:0 10px 28px rgba(36,39,44,.16);padding:6px;display:flex;flex-direction:column;gap:2px;min-width:172px;}
+.share-menu[hidden]{display:none;}
+.share-opt{display:flex;align-items:center;gap:9px;font-family:var(--fb);font-size:13.5px;font-weight:600;color:var(--ink);text-decoration:none;background:none;border:none;text-align:left;padding:10px 12px;border-radius:8px;cursor:pointer;width:100%;}
+.share-opt:hover{background:var(--chip-bg);}
+.pdf-btn{display:flex;align-items:center;gap:8px;font-family:var(--fb);font-weight:700;font-size:14px;color:#fff;background:var(--ink);border:none;border-radius:999px;padding:13px 22px;cursor:pointer;box-shadow:0 6px 20px rgba(36,39,44,.2);}
 .pdf-btn:hover{background:var(--issue);}
 .pdf-btn:focus-visible{outline:2px solid var(--issue);outline-offset:3px;}
 @media print{
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
   @page{margin:14mm;}
   body{font-size:12.5px;orphans:3;widows:3;word-break:keep-all;overflow-wrap:break-word;}
-  .no-print,.pdf-btn,.pillar-nav{display:none !important;}
+  .no-print,.fab-stack,.pillar-nav{display:none !important;}
   .wrap{max-width:none;padding:0;}
   .pillar{margin-bottom:34px;break-inside:auto;}
   .pillar-head{break-after:avoid;page-break-after:avoid;}
   .card,.chart,.deepdive,.timeline,.stat,.insight{break-inside:avoid;page-break-inside:avoid;}
   .card-body,.dd-body{break-inside:avoid;page-break-inside:avoid;}
-  .deepdive .dd-chevron{display:none;}
+  .deepdive .dd-chevron,.pillar-chevron{display:none;}
   .tag::after{content:" (" attr(href) ")";font-size:9.5px;color:var(--muted);word-break:break-all;}
   a{text-decoration:none;}
 }
@@ -695,10 +734,24 @@ a{color:inherit;}
     <div class="footer-meta">${YEAR} Vol.${esc(data.meta?.vol || VOL)} · Web + Video Search + AI<br>${esc(data.meta?.date || DATE)}<br>생성 시각: ${esc(data.generatedAt || GENERATED_AT)}</div>
   </div>
 </div>
-<button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
-  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
-  <span>PDF로 저장</span>
-</button>
+<div class="fab-stack no-print">
+  <button class="fab-btn" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="맨 위로 가기" title="맨 위로 가기">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"/><path d="M5 12l7-7 7 7"/></svg>
+  </button>
+  <div class="share-wrap">
+    <button class="fab-btn" id="shareBtn" aria-label="공유하기" aria-haspopup="true" aria-expanded="false" title="공유하기">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 10.5l6.8-3.9"/><path d="M8.6 13.5l6.8 3.9"/></svg>
+    </button>
+    <div class="share-menu" id="shareMenu" hidden>
+      <button class="share-opt" id="copyLinkBtn" type="button"><span>🔗</span><span id="copyLinkLabel">링크 복사</span></button>
+      <button class="share-opt" id="emailShareBtn" type="button"><span>✉️</span><span>이메일로 공유</span></button>
+    </div>
+  </div>
+  <button class="pdf-btn" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h9l3 3v4"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>
+    <span>PDF로 저장</span>
+  </button>
+</div>
 <script>
 (function(){
   window.addEventListener("beforeprint", function(){
@@ -711,6 +764,62 @@ a{color:inherit;}
     document.querySelectorAll("details").forEach(function(d){
       d.open = d.dataset.wasOpen === "1";
     });
+  });
+
+  function fallbackCopy(text){
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+  }
+
+  var shareBtn = document.getElementById("shareBtn");
+  var shareMenu = document.getElementById("shareMenu");
+  var copyLinkBtn = document.getElementById("copyLinkBtn");
+  var copyLinkLabel = document.getElementById("copyLinkLabel");
+  var emailShareBtn = document.getElementById("emailShareBtn");
+  if (!shareBtn || !shareMenu) return;
+
+  function closeMenu(){
+    shareMenu.hidden = true;
+    shareBtn.setAttribute("aria-expanded", "false");
+  }
+  shareBtn.addEventListener("click", function(e){
+    e.stopPropagation();
+    var willOpen = shareMenu.hidden;
+    shareMenu.hidden = !willOpen;
+    shareBtn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+  });
+  document.addEventListener("click", function(e){
+    if (!shareMenu.hidden && !e.target.closest(".share-wrap")) closeMenu();
+  });
+  document.addEventListener("keydown", function(e){
+    if (e.key === "Escape") closeMenu();
+  });
+  copyLinkBtn.addEventListener("click", function(){
+    var url = location.href;
+    var restore = copyLinkLabel.textContent;
+    var onDone = function(){
+      copyLinkLabel.textContent = "복사됨!";
+      setTimeout(function(){ copyLinkLabel.textContent = restore; }, 1500);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(onDone).catch(function(){ fallbackCopy(url); onDone(); });
+    } else {
+      fallbackCopy(url);
+      onDone();
+    }
+    closeMenu();
+  });
+  emailShareBtn.addEventListener("click", function(){
+    var subject = encodeURIComponent(document.title);
+    var body = encodeURIComponent(document.title + "\\n" + location.href);
+    location.href = "mailto:?subject=" + subject + "&body=" + body;
+    closeMenu();
   });
 })();
 </script>
