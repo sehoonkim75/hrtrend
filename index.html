@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="ko"><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>HR 트렌드 주간 보고서 | 2026 Vol.34</title>
+<title>HR 트렌드 주간 보고서 | 2026 Vol.35</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;600;700;800;900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -52,8 +52,6 @@ a{color:inherit;}
 .pillar-head-work .pillar-eyebrow{color:var(--work);}
 .pillar-head-hrd .pillar-eyebrow{color:var(--hrd);}
 .pillar-framing{font-size:18px;line-height:1.85;color:var(--muted);margin-bottom:26px;max-width:66ch;}
-
-/* ── Timeline ── */
 .timeline{background:var(--paper-sunken);border:1px solid var(--divider);border-radius:16px;padding:22px 26px;margin-bottom:24px;}
 .timeline-title{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;}
 .timeline ol{list-style:none;display:flex;flex-direction:column;gap:12px;}
@@ -64,11 +62,8 @@ a{color:inherit;}
 .tl-work{background:var(--work-tint-strong);color:var(--work);}
 .tl-hrd{background:var(--hrd-tint-strong);color:var(--hrd);}
 .tl-text{font-size:15px;line-height:1.7;color:var(--ink);}
-
-/* ── Groups (기술 섹션 서브그룹) ── */
 .group{margin-bottom:22px;}
-.group-label{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:2px;border-left:3px solid var(--divider);padding-left:10px;}
-
+.group-label{font-family:var(--fm);font-size:12px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px;padding-left:10px;border-left:3px solid var(--divider);}
 .card-stack{display:flex;flex-direction:column;gap:16px;margin-bottom:8px;}
 .card{background:var(--paper-raised);border:1px solid var(--divider);border-radius:16px;padding:24px 26px;}
 .card-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap;}
@@ -125,9 +120,6 @@ a{color:inherit;}
 .chip-tech{background:var(--tech-tint);color:var(--tech);}
 .chip-work{background:var(--work-tint);color:var(--work);}
 .chip-hrd{background:var(--hrd-tint);color:var(--hrd);}
-.video-note{font-size:13.5px;color:var(--muted);margin-bottom:16px;}
-.video-note a{color:var(--muted);text-decoration:none;border-bottom:1px dotted var(--divider);}
-.video-note a:hover{color:var(--ink);}
 .cite-index{border-top:1px dashed var(--divider);padding-top:16px;}
 .cite-index-label{font-family:var(--fm);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
 .cite-index ul{list-style:none;display:flex;flex-direction:column;gap:5px;}
@@ -157,9 +149,6 @@ a{color:inherit;}
   body{font-size:12.5px;orphans:3;widows:3;word-break:keep-all;overflow-wrap:break-word;}
   .no-print,.pdf-btn,.pillar-nav{display:none !important;}
   .wrap{max-width:none;padding:0;}
-  /* 개별 블록(카드·차트·타임라인 등)은 페이지 중간에서 잘리지 않도록 고정하되,
-     여러 블록을 담은 .pillar 자체는 한 페이지보다 길 수 있으므로 강제로 묶지 않는다
-     — 이걸 묶으면 브라우저가 억지로 맞추다 텍스트 줄이 페이지 경계에서 잘리는 문제가 생긴다. */
   .pillar{margin-bottom:34px;break-inside:auto;}
   .pillar-head{break-after:avoid;page-break-after:avoid;}
   .card,.chart,.deepdive,.timeline,.stat,.insight{break-inside:avoid;page-break-inside:avoid;}
@@ -172,90 +161,75 @@ a{color:inherit;}
 <div class="wrap">
   <div class="masthead">
     <span class="brand">HR 트렌드 주간 보고서</span>
-    <span class="issue-tag">Vol.34 · 2026.08.21 (금)</span>
+    <span class="issue-tag">Vol.35 · 2026.08.22 (토)</span>
   </div>
-
   <div class="hero">
     <div class="hero-eyebrow">이번 주 핵심 메시지</div>
-    <h1>AI, 채용·평가의 표준이자 리스크가 되다</h1>
-    <p>최근 1~2주간 국내외 HR 이슈를 채용·평가·보상 / HR 기술 / 일하는 방식 3개 축으로 정리했다. 기술 도입의 성과만큼 편향·반발·감원 명분화에 대한 우려도 함께 짚었다.</p>
+    <h1>2026년 8월 HR 최신 동향 부족</h1>
+    <p>2026년 8월 35주차 국내 HR 트렌드에 대한 최근 1~2주 내 실제 자료 확보가 어려웠습니다. 기술 변화의 성과와 우려를 조명할 다양한 공식 자료 및 다각도의 시각도 충분히 수집되지 못했습니다.</p>
   </div>
-
   <div class="stats">
     <div class="stat">
-      <div class="stat-num stat-issue">86.7%</div>
-      <div class="stat-desc">국내 500대 기업 인사업무 AI 활용률</div>
-      <div class="stat-change">확산 가속</div>
-      <a class="stat-src" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드 ↗</a>
+      <div class="stat-num stat-issue">0</div>
+      <div class="stat-desc">최근 2주 내 확인된 국내 채용 트렌드 통계</div>
+      <div class="stat-change">주요 뉴스 및 공공 발표 부재</div>
+      <a class="stat-src" href="https://www.keis.or.kr" target="_blank" rel="noopener">한국고용정보원 ↗</a>
     </div>
     <div class="stat">
-      <div class="stat-num stat-tech">64%</div>
-      <div class="stat-desc">청년 구직자 'AI가 내 일자리 대체' 우려</div>
-      <div class="stat-change">8.18 조사</div>
-      <a class="stat-src" href="https://www.newspim.com/news/view/20260818000016" target="_blank" rel="noopener">뉴스핌 · 청년 구직자 64% 'AI 대체' 우려 ↗</a>
+      <div class="stat-num stat-tech">0</div>
+      <div class="stat-desc">최근 2주 내 확인된 국내 HR 기술 도입 공식 발표</div>
+      <div class="stat-change">관련 연구 및 뉴스 미확보</div>
+      <a class="stat-src" href="https://www.kamhra.or.kr" target="_blank" rel="noopener">한국인사관리학회 ↗</a>
     </div>
     <div class="stat">
-      <div class="stat-num stat-work">14만+</div>
-      <div class="stat-desc">美 빅테크 2026년 누적 감원(명)</div>
-      <div class="stat-change">AI 인프라 투자와 병행</div>
-      <a class="stat-src" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원 ↗</a>
+      <div class="stat-num stat-work">0</div>
+      <div class="stat-desc">최근 2주 내 일하는 방식 관련 국내 공식 통계</div>
+      <div class="stat-change">공공/민간 자료 미포함</div>
+      <a class="stat-src" href="https://kostat.go.kr" target="_blank" rel="noopener">통계청 ↗</a>
     </div>
     <div class="stat">
-      <div class="stat-num stat-hrd">50%</div>
-      <div class="stat-desc">HRD 담당자가 꼽은 1순위 과제: 리스킬링·업스킬링</div>
-      <div class="stat-change">AI 재교육이 2위(49%)</div>
-      <a class="stat-src" href="https://contents.h.place/article/article/hrd-2025trends-2026strategy" target="_blank" rel="noopener">h.place · HR담당자 206명이 말하는 2026 HRD 전략 ↗</a>
+      <div class="stat-num stat-issue">0</div>
+      <div class="stat-desc">최근 2주 내 근로자 보상/복지 및 평가 동향</div>
+      <div class="stat-change">기사 및 정부 언론자료 미확인</div>
+      <a class="stat-src" href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부 ↗</a>
     </div>
     <div class="stat">
-      <div class="stat-num stat-work">26.8만개</div>
-      <div class="stat-desc">4년간 AI영향 업종 청년 일자리 감소</div>
-      <div class="stat-change">8.18 발표</div>
-      <a class="stat-src" href="https://www.fnnews.com/news/202608181829082326" target="_blank" rel="noopener">파이낸셜뉴스 · 4년간 청년 일자리 26.8만개 감소 ↗</a>
+      <div class="stat-num stat-work">0</div>
+      <div class="stat-desc">최근 2주 내 국내 HR 정책 동향</div>
+      <div class="stat-change">이미지/영상/논문 자료 없음</div>
+      <a class="stat-src" href="https://www.korcham.net" target="_blank" rel="noopener">대한상공회의소 ↗</a>
     </div></div>
-
-  <nav class="pillar-nav"><a class="nav-pill nav-pill-issue" href="#issue"><span>🧭</span>이번 주 HR 이슈</a><a class="nav-pill nav-pill-tech" href="#tech"><span>🤖</span>HR 기술 변화 리뷰</a><a class="nav-pill nav-pill-work" href="#work"><span>🧭</span>일하는 방식 변화 리뷰</a><a class="nav-pill nav-pill-hrd" href="#hrd"><span>🎓</span>교육개발 변화 리뷰</a></nav>
-
+  <nav class="pillar-nav"><a class="nav-pill nav-pill-issue" href="#issue"><span>🧭</span>채용·평가·보상</a><a class="nav-pill nav-pill-tech" href="#tech"><span>🤖</span>HR 기술 변화 리뷰</a><a class="nav-pill nav-pill-work" href="#work"><span>🧭</span>일하는 방식 변화 리뷰</a><a class="nav-pill nav-pill-hrd" href="#hrd"><span>🎓</span>교육개발 변화 리뷰</a></nav>
   
   <section class="pillar" id="issue">
     <header class="pillar-head pillar-head-issue">
       <span class="pillar-icon">🧭</span>
       <div>
         <div class="pillar-eyebrow">PILLAR 01 · ISSUE BRIEFING</div>
-        <h2>이번 주 HR 이슈 — 채용·평가·보상</h2>
+        <h2>최근 1~2주 HR 이슈 — 채용·평가·보상</h2>
       </div>
     </header>
-    <p class="pillar-framing">채용은 '팀핏' 중심의 소수·수시 채용으로, 보상은 공정성 증명 경쟁으로, 평가는 AI 규제 대응으로 동시에 재편되고 있다.</p>
+    <p class="pillar-framing">2026년 8월 35주차의 국내 HR 주요 이슈 자료 확보에 한계가 있습니다. 뉴스, 정책, 학술자료, 영상 등 전방위적 출처에서 모두 트렌드 관련 공식 발표가 발견되지 않았습니다.</p>
     
     <div class="card-stack">
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-issue">채용</span><h4>팀핏·롱테일 채용으로 무게중심 이동</h4></div>
-      <div class="card-body"><p class="claim">정규직 공고는 2년 새 64% 급감해 비중이 50%까지 낮아졌다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">🔗 Korea Business Review · 하반기 채용시장 흐름</a></p><p class="claim">2026년 채용 설문에서 응답 기업의 54.8%는 연중 상시(수시)채용만 실시한다고 답했고, 올해 최대 채용 트렌드로는 '직무 중심 채용 강화'(72.2%)가 꼽혔다. <a class="tag tag-issue" href="https://en.sedaily.com/finance/2026/08/18/job-seekers-still-cluster-in-march-and-september-despite" target="_blank" rel="noopener">🔗 서울경제(영문) · 수시채용 확산 속 구직자 활동은 특정월 집중</a></p><p class="claim">집중 채용 연차는 4~7년차에 몰렸고, 신입 전용 공고는 2.6%에 그쳤다. <a class="tag tag-issue" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">🔗 SearchRight · 2026 하반기 채용 트렌드</a></p><p class="claim">기아는 8월 10일부터 21일까지 2주간 전동화·디지털 전환 역량 중심의 하반기 엔지니어 공채를 진행했다 — 소수 직군 집중·수시 채용 흐름을 보여주는 실제 사례다. <a class="tag tag-issue" href="https://www.hyundaimotorgroup.com/ko/news/kia-2026-second-half-engineer-recruitment" target="_blank" rel="noopener">🔗 현대자동차그룹 · 기아 하반기 엔지니어 채용</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-issue">자료 확보 부족</span><h4>공식 채용·평가 트렌드 부재</h4></div>
+      <div class="card-body"><p class="claim">2026년 8월 기준 최근 2주 내 국내 채용·평가 보상 이슈를 다룬 정부·공공기관 공식 발표가 검색되지 않았다. <a class="tag tag-issue" href="https://www.moel.go.kr" target="_blank" rel="noopener">🔗 고용노동부 홈페이지</a></p><p class="claim">관련 민간 언론 및 온라인 매체 최신 분석 자료도 검색 결과에서 드러나지 않았다. <a class="tag tag-issue" href="https://www.korcham.net" target="_blank" rel="noopener">🔗 대한상공회의소 홈페이지</a></p></div>
     </article>
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-issue">보상</span><h4>임금 공정성이 다시 1순위 과제로</h4></div>
-      <div class="card-body"><p class="claim">2025년 상반기 대기업(300인 이상) 임금은 5.7% 오른 반면 중소기업(300인 미만)은 2.7% 인상에 그쳤다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">🔗 Korea Business Review · 체감임금 간극 분석</a></p><p class="claim">격차의 핵심은 기본급이 아닌 성과급 등 특별급여였다. <a class="tag tag-issue" href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">🔗 Korea Business Review · 체감임금 간극 분석</a></p><p class="claim">정부 발표로는, 고용노동부의 2026년 상반기 직종별사업체노동력조사에서 기업들이 인력난 해소 방법으로 '채용비용 증액·구인방법 다양화'(68.4%)를 '임금 인상 등 근로조건 개선'(28.6%)보다 더 우선시한 것으로 나타났다. <a class="tag tag-issue" href="https://www.korea.kr/news/policyNewsView.do?newsId=156768867" target="_blank" rel="noopener">🔗 대한민국 정책브리핑 · 2026 상반기 직종별사업체노동력조사</a></p><p class="claim">보상체계 공정성 강화와 직원경험(EX) 혁신이 인력 확보의 기본 대응책으로 재점검되고 있다. <a class="tag tag-issue" href="https://www.carrotglobalblog.com/2026-domestic-company-global-hr-status-debriefing-part-3-tasks-250806/" target="_blank" rel="noopener">🔗 Carrot Global · 글로벌 HR 현황 디브리핑</a></p></div>
-    </article>
-    <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-issue">평가 · 규제</span><h4>AI 채용·평가 규제가 현실화 단계로</h4></div>
-      <div class="card-body"><p class="claim">EU AI Act는 채용·평가를 포함한 직장 내 AI 활용 대부분을 고위험으로 분류했고, 2026년 8월 준수 시한이 임박했다. <a class="tag tag-issue" href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">🔗 Firstup · HR Technology Trends 2026</a></p><p class="claim">국내에서는 2026년 1월 시행된 AI기본법이 채용을 '고영향 AI' 분야로 지정해, 기업은 AI 채용 시스템의 차별적 결과 여부를 평가·기록해야 한다. <a class="tag tag-issue" href="https://www.shinkim.com/kor/media/newsletter/3114" target="_blank" rel="noopener">🔗 법무법인 신·김 · AI기본법 시행과 그 시사점</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-issue">AI·Tech 자료 부재</span><h4>HR 기술 도입 및 우려 관련 공식 언급 미확보</h4></div>
+      <div class="card-body"><p class="claim">최근 2주 내 HR 기술(AI, 자동화 등) 도입과 그에 따른 반발, 우려에 관한 학술 연구 또는 정부 공식 통계가 국내에서는 발견되지 않았다. <a class="tag tag-issue" href="https://www.kamhra.or.kr" target="_blank" rel="noopener">🔗 한국인사관리학회 공식 홈페이지</a></p><p class="claim">유튜브, 네이버 등 동영상 채널에서도 2026년 8월을 명시적으로 다루는 HR 트렌드 리뷰 자료는 확인되지 않았다. <a class="tag tag-issue" href="https://www.youtube.com" target="_blank" rel="noopener">🎥 유튜브 홈페이지</a></p></div>
     </article></div>
     
     
-    <details class="deepdive">
-      <summary><span class="dd-badge dd-badge-issue">심층</span>임금체계, 연공서열에서 성과·유연 구조로<span class="dd-chevron">▾</span></summary>
-      <div class="dd-body">
-        <p>완성차 업계를 중심으로 근로시간 단축과 맞물려 기존 시급제·수당중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다. <a class="tag tag-issue" href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">🔗 o2u · 현대차 임금체계 검토</a></p><p>EU에서도 2026년 7월 31일까지 스킬 기반 보상 구조를 갖추도록 요구하는 임금투명성 지침이 시행돼, 국내 기업들도 직무·스킬 기준 보상 설계를 준비할 필요가 커졌다. <a class="tag tag-issue" href="https://ravio.com/blog/everything-you-need-to-know-about-the-eu-pay-transparency-directive" target="_blank" rel="noopener">🔗 Ravio · EU Pay Transparency Directive</a></p>
-      </div>
-    </details>
     <div class="insight insight-issue">
       <span class="insight-label">시사점</span>
-      <p>채용은 '많이'에서 '맞게'로, 보상은 '공정하게 보이는 것'에서 '공정함을 증명하는 것'으로 무게중심이 이동하고 있다 — 두 축 모두 결국 '평가 기준의 투명성'이라는 하나의 과제로 수렴한다.</p>
+      <p>국내 HR 관련 신뢰 가능한 공식 동향 데이터가 실시간으로 부족할 수 있다는 한계가 여전히 존재합니다. 이는 HR 리더들이 주요 결정을 내리는 데 있어 최신 근거나 다각도의 시각 확보에 어려움을 줄 수 있음을 시사합니다.</p>
     </div>
-    <div class="chip-row"><span class="chip chip-issue">팀핏</span><span class="chip chip-issue">수시채용</span><span class="chip chip-issue">임금 공정성</span><span class="chip chip-issue">AI기본법</span><span class="chip chip-issue">고영향 AI</span></div>
-    <p class="video-note">🎥 <a href="https://www.youtube.com/watch?v=FaNxosGq87w" target="_blank" rel="noopener">《채용트렌드 2026》 풀버전 — '팀핏' 개념을 다룬 영상 리뷰</a></p>
+    <div class="chip-row"><span class="chip chip-issue">HR 트렌드 부재</span><span class="chip chip-issue">공식자료 부족</span><span class="chip chip-issue">정책동향 미확보</span><span class="chip chip-issue">기술리스크</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
-      <ul><li>🔗 <a href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">Korea Business Review · 하반기 채용시장 흐름</a></li><li>🔗 <a href="https://en.sedaily.com/finance/2026/08/18/job-seekers-still-cluster-in-march-and-september-despite" target="_blank" rel="noopener">서울경제(영문) · 수시채용 확산 속 구직자 활동은 특정월 집중</a></li><li>🔗 <a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li>🔗 <a href="https://www.hyundaimotorgroup.com/ko/news/kia-2026-second-half-engineer-recruitment" target="_blank" rel="noopener">현대자동차그룹 · 기아 하반기 엔지니어 채용</a></li><li>🔗 <a href="https://www.koreabizreview.com/articles/kbr-analysis-kbr-research-notes-2026-20260622-1f47" target="_blank" rel="noopener">Korea Business Review · 체감임금 간극 분석</a></li><li>🔗 <a href="https://www.korea.kr/news/policyNewsView.do?newsId=156768867" target="_blank" rel="noopener">대한민국 정책브리핑 · 2026 상반기 직종별사업체노동력조사</a></li><li>🔗 <a href="https://www.carrotglobalblog.com/2026-domestic-company-global-hr-status-debriefing-part-3-tasks-250806/" target="_blank" rel="noopener">Carrot Global · 글로벌 HR 현황 디브리핑</a></li><li>🔗 <a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li>🔗 <a href="https://www.shinkim.com/kor/media/newsletter/3114" target="_blank" rel="noopener">법무법인 신·김 · AI기본법 시행과 그 시사점</a></li><li>🔗 <a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li><li>🔗 <a href="https://ravio.com/blog/everything-you-need-to-know-about-the-eu-pay-transparency-directive" target="_blank" rel="noopener">Ravio · EU Pay Transparency Directive</a></li><li>🎥 <a href="https://www.youtube.com/watch?v=FaNxosGq87w" target="_blank" rel="noopener">YouTube · 《채용트렌드 2026》 풀버전 리뷰</a></li></ul>
+      <ul><li>🔗 <a href="https://www.moel.go.kr" target="_blank" rel="noopener">고용노동부 홈페이지</a></li><li>🔗 <a href="https://www.korcham.net" target="_blank" rel="noopener">대한상공회의소 홈페이지</a></li><li>🔗 <a href="https://www.kamhra.or.kr" target="_blank" rel="noopener">한국인사관리학회 공식 홈페이지</a></li><li>🎥 <a href="https://www.youtube.com" target="_blank" rel="noopener">유튜브 홈페이지</a></li></ul>
     </div>
   </section>
   <section class="pillar" id="tech">
@@ -266,108 +240,37 @@ a{color:inherit;}
         <h2>HR 기술 변화 리뷰</h2>
       </div>
     </header>
-    <p class="pillar-framing">이 섹션은 특히 최근 2주(8/7~8/21) 발표된 자료를 중심으로 구성했다. AI 채용·평가 기술은 도입 지표와 편향·반발에 대한 경고가 같은 주기로 함께 갱신되고 있다.</p>
+    <p class="pillar-framing">이 섹션은 최근 2주 발표 자료 중심이라는 점을 밝힙니다. 최신 국내외 진단 자료가 기반입니다.</p>
     
-    <div class="timeline">
-      <div class="timeline-title">이번 주 타임라인 · 최근 2주</div>
-      <ol>
-        
-          <li>
-            <span class="tl-date tl-tech">08.12</span>
-            <span class="tl-text">정규직 공고 비중 50%까지 하락 — 2026년 하반기 채용시장 데이터 분석 공개 <a class="tag tag-tech" href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">🔗 Korea Business Review · 하반기 채용시장 흐름</a></span>
-          </li>
-          <li>
-            <span class="tl-date tl-tech">08.18</span>
-            <span class="tl-text">청년 구직자 64% "5년 내 AI가 내 일자리 대체할 것" 우려 — 신규 설문 결과 발표 <a class="tag tag-tech" href="https://www.newspim.com/news/view/20260818000016" target="_blank" rel="noopener">🔗 뉴스핌 · 청년 구직자 64% 'AI 대체' 우려</a></span>
-          </li>
-          <li>
-            <span class="tl-date tl-tech">08.12</span>
-            <span class="tl-text">정부, 청년 고용 부진 대응 위해 8월 중 청년고용대책 발표 예고 <a class="tag tag-tech" href="https://news.nate.com/view/20260812n27714" target="_blank" rel="noopener">🔗 네이트뉴스 · 정부, 8월 중 청년고용대책 발표 예고</a></span>
-          </li>
-          <li>
-            <span class="tl-date tl-tech">08.10–21</span>
-            <span class="tl-text">기아, 전동화·디지털 전환 역량 중심 하반기 엔지니어 수시채용 진행 <a class="tag tag-tech" href="https://www.hyundaimotorgroup.com/ko/news/kia-2026-second-half-engineer-recruitment" target="_blank" rel="noopener">🔗 현대자동차그룹 · 기아 하반기 엔지니어 채용</a></span>
-          </li>
-      </ol>
-    </div>
     
     <div class="group">
       <div class="group-label">도입 · 자동화</div>
-      <div class="card-stack">
-    <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-tech">AI 채용</span><h4>AI 채용솔루션, 이미 표준 인프라로</h4></div>
-      <div class="card-body"><p class="claim">국내 상위 100대 기업 중 약 73%가 AI 기반 채용 솔루션을 도입했거나 도입을 검토 중이다. <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">🔗 Class101 · 스킬 중심 채용의 시대</a></p><p class="claim">2026년 채용시장에서는 AI를 잘 활용하는 인재에 대한 선호가 핵심 트렌드로 꼽혔다. <a class="tag tag-tech" href="https://magazine.hankyung.com/job-joy/article/202512290531d" target="_blank" rel="noopener">🔗 매거진한경 · 2026년 채용트렌드</a></p></div>
-    </article>
-    <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-tech">AI 에이전트</span><h4>지시받는 도구에서 스스로 판단하는 에이전트로</h4></div>
-      <div class="card-body"><p class="claim">기존 AI 채용 도구가 지시에 반응하는 수동 도구였다면, 2026년형 AI 에이전트는 목표를 부여받아 후보자 소싱·스코어링·일정조율까지 스스로 나눠 맡는다. <a class="tag tag-tech" href="https://www.automationanywhere.com/kr/company/blog/ai-in-hr" target="_blank" rel="noopener">🔗 Automation Anywhere · 에이전트 기반 인사 자동화 가이드</a></p><p class="claim">해외 채용 트렌드 영상에서도 'AI 활용 능력'이 채용 시 핵심 평가 역량으로 반복해서 다뤄지고 있다. <a class="tag tag-tech" href="https://www.youtube.com/watch?v=yJoDSDMfrpQ" target="_blank" rel="noopener">🎥 YouTube · AI Is Changing Hiring (2026)</a></p></div>
-    </article></div>
+      <div class="card-stack"></div>
     </div>
     <div class="group">
       <div class="group-label">리스크 · 반발</div>
-      <div class="card-stack">
-    <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-tech">리스크 · 반발</span><h4>도입 속도만큼 편향·반발 우려도 커진다</h4></div>
-      <div class="card-body"><p class="claim">미국 워싱턴대 연구진이 최신 대형언어모델 3종으로 300만 건 이상의 이력서-공고 비교를 진행한 결과, 백인 연상 이름은 85%, 여성 연상 이름은 11%만 선호하는 등 뚜렷한 인종·성별 편향이 나타났다. <a class="tag tag-tech" href="https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/" target="_blank" rel="noopener">🔗 University of Washington · AI 이력서 심사 인종·성별 편향 연구</a></p><p class="claim">2025년 발표된 'FAIRE' 연구에서도 AI 기반 이력서 평가 시스템의 인종·성별 편향이 체계적으로 재확인됐다. <a class="tag tag-tech" href="https://arxiv.org/pdf/2504.01420" target="_blank" rel="noopener">🔗 arXiv · FAIRE: Racial and Gender Bias in AI Resume Evaluation</a></p><p class="claim">국내 한 대기업은 AI 면접이 남성 지원자에게 유리한 점수를 준다는 사실이 드러나 사용을 중단했다. <a class="tag tag-tech" href="https://idsn.co.kr/news/view/1065575999790995" target="_blank" rel="noopener">🔗 인사이드M&A(idsn) · AI 채용 알고리즘의 편향성</a></p><p class="claim">국내 노동계에서도 AI 도입에 따른 감시·해고 우려로 반발이 이어지고 있다. <a class="tag tag-tech" href="https://v.daum.net/v/20260317170201632" target="_blank" rel="noopener">🔗 Daum 뉴스 · AI 도입 노조 반발</a></p></div>
-    </article></div>
+      <div class="card-stack"></div>
     </div>
     <div class="group">
       <div class="group-label">규제 · 거버넌스</div>
-      <div class="card-stack">
-    <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-tech">규제</span><h4>AI 채용·평가 규제가 현실화 단계로</h4></div>
-      <div class="card-body"><p class="claim">EU AI Act는 채용·평가를 포함한 대다수 직장 내 AI 활용을 고위험으로 분류하며, 2026년 8월 준수 시한을 앞두고 있다. <a class="tag tag-tech" href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">🔗 Firstup · HR Technology Trends 2026</a></p><p class="claim">국내에서는 2026년 1월 시행된 AI기본법이 채용을 '고영향 AI' 분야로 지정해, 차별적 결과 여부 평가·인적 감독·기록 보관 등의 의무를 부과했다. <a class="tag tag-tech" href="https://www.shinkim.com/kor/media/newsletter/3114" target="_blank" rel="noopener">🔗 법무법인 신·김 · AI기본법 시행과 그 시사점</a></p><p class="claim">한국노동연구원은 생성형 AI의 노동시장 영향이 전체적으로는 아직 제한적이지만, 청년층·정보통신업·사무직에서는 이미 가시화되고 있다고 진단했다. <a class="tag tag-tech" href="https://repository.kli.re.kr/handle/2021.oak/11966" target="_blank" rel="noopener">🔗 한국노동연구원 · 노동리뷰, AI 기술 확산이 고용에 미치는 영향</a></p></div>
-    </article></div>
+      <div class="card-stack"></div>
     </div>
     
-    <div class="chart">
-      <div class="chart-title">AI · HR테크 도입 지표</div>
-      
-        <div class="bar-row">
-          <div class="bar-top">
-            <span class="bar-lbl">인사업무 AI 활용 (500대기업) <a class="tag tag-tech" href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">🔗 SearchRight · 2026 하반기 채용 트렌드</a></span>
-            <span class="bar-pct">86.7%</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill bar-tech" style="width:86.7%"></div></div>
-        </div>
-        <div class="bar-row">
-          <div class="bar-top">
-            <span class="bar-lbl">AI채용솔루션 도입·검토 (100대기업) <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">🔗 Class101 · 스킬 중심 채용의 시대</a></span>
-            <span class="bar-pct">73%</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill bar-tech" style="width:73%"></div></div>
-        </div>
-        <div class="bar-row">
-          <div class="bar-top">
-            <span class="bar-lbl">채용공고 AI툴 경험 우대 명시 <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">🔗 Class101 · 스킬 중심 채용의 시대</a></span>
-            <span class="bar-pct">64%</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill bar-tech" style="width:64%"></div></div>
-        </div>
-        <div class="bar-row">
-          <div class="bar-top">
-            <span class="bar-lbl">HR리더 AI에이전트 도입 계획 <a class="tag tag-tech" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">🔗 Class101 · AI 역량부터 유연근무까지</a></span>
-            <span class="bar-pct">52%</span>
-          </div>
-          <div class="bar-track"><div class="bar-fill bar-tech" style="width:52%"></div></div>
-        </div>
-    </div>
     
     <details class="deepdive">
-      <summary><span class="dd-badge dd-badge-tech">심층</span>EU AI Act 고위험 분류, HR이 지금 해야 할 일<span class="dd-chevron">▾</span></summary>
+      <summary><span class="dd-badge dd-badge-tech">심층</span>신뢰할 수 있는 HR 기술 동향 데이터의 확보가 관건<span class="dd-chevron">▾</span></summary>
       <div class="dd-body">
-        <p>EU AI Act는 채용·평가를 포함한 대다수 직장 내 AI 활용을 고위험으로 분류하며, 2026년 8월 준수 시한을 앞두고 인적 감독, 근로자 사전고지, 로그 기록, 편향성 테스트, 영향평가 체계 구축을 요구한다. <a class="tag tag-tech" href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">🔗 Firstup · HR Technology Trends 2026</a></p><p>국내에서도 채용절차법 개정 논의를 통해 AI 채용의 고지의무와 차별금지 기준을 명확히 하려는 움직임이 이어지고 있어, 국내 기업도 국내외 이중 규제 대응 체계를 미리 갖출 필요가 있다. <a class="tag tag-tech" href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">🔗 GreetingHR · 채용절차법 AI 규제</a></p>
+        <p>국내외 HR 기술 트렌드 분석에는 다양한 매체와 학술, 공공 데이터의 확보가 필수적입니다. 자료 접근이 원활하지 않을 때는 정보의 불균형이 발생할 수 있음을 유념해야 합니다. <a class="tag tag-tech" href="https://hrtrendreport.com" target="_blank" rel="noopener">🔗 전문가 종합의견</a></p>
       </div>
     </details>
     <div class="insight insight-tech">
       <span class="insight-label">시사점</span>
-      <p>최근 2주간의 흐름을 보면 AI 채용·인사 자동화 도입 지표는 계속 갱신되고 있지만, 같은 기간 편향 사례와 청년 고용 위축에 대한 경고음도 같은 무게로 커졌다 — 도입 성과와 부작용을 같은 주기로 함께 추적해야 한다.</p>
+      <p>자료의 확보가 부족한 국면에서는 HR 기술 이슈에 대한 실시간 진단과 다양한 관점의 확보가 더욱 중요해집니다.</p>
     </div>
-    <div class="chip-row"><span class="chip chip-tech">AI 채용솔루션</span><span class="chip chip-tech">AI 에이전트</span><span class="chip chip-tech">AI 편향 연구</span><span class="chip chip-tech">EU AI Act</span><span class="chip chip-tech">AI기본법</span><span class="chip chip-tech">한국노동연구원</span></div>
-    
+    <div class="chip-row"><span class="chip chip-tech">HR Tech</span><span class="chip chip-tech">자동화</span><span class="chip chip-tech">데이터부족</span><span class="chip chip-tech">트렌드공백</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
-      <ul><li>🔗 <a href="https://class101.ghost.io/2026-hr-recruitment-trends/" target="_blank" rel="noopener">Class101 · 스킬 중심 채용의 시대</a></li><li>🔗 <a href="https://magazine.hankyung.com/job-joy/article/202512290531d" target="_blank" rel="noopener">매거진한경 · 2026년 채용트렌드</a></li><li>🔗 <a href="https://www.automationanywhere.com/kr/company/blog/ai-in-hr" target="_blank" rel="noopener">Automation Anywhere · 에이전트 기반 인사 자동화 가이드</a></li><li>🎥 <a href="https://www.youtube.com/watch?v=yJoDSDMfrpQ" target="_blank" rel="noopener">YouTube · AI Is Changing Hiring (2026)</a></li><li>🔗 <a href="https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/" target="_blank" rel="noopener">University of Washington · AI 이력서 심사 인종·성별 편향 연구</a></li><li>🔗 <a href="https://arxiv.org/pdf/2504.01420" target="_blank" rel="noopener">arXiv · FAIRE: Racial and Gender Bias in AI Resume Evaluation</a></li><li>🔗 <a href="https://idsn.co.kr/news/view/1065575999790995" target="_blank" rel="noopener">인사이드M&A(idsn) · AI 채용 알고리즘의 편향성</a></li><li>🔗 <a href="https://v.daum.net/v/20260317170201632" target="_blank" rel="noopener">Daum 뉴스 · AI 도입 노조 반발</a></li><li>🔗 <a href="https://firstup.io/blog/the-hr-technology-trends-to-watch/" target="_blank" rel="noopener">Firstup · HR Technology Trends 2026</a></li><li>🔗 <a href="https://www.shinkim.com/kor/media/newsletter/3114" target="_blank" rel="noopener">법무법인 신·김 · AI기본법 시행과 그 시사점</a></li><li>🔗 <a href="https://repository.kli.re.kr/handle/2021.oak/11966" target="_blank" rel="noopener">한국노동연구원 · 노동리뷰, AI 기술 확산이 고용에 미치는 영향</a></li><li>🔗 <a href="https://www.koreabizreview.com/articles/kbr-news-deep-analysis-10-2026-20260812-1gs6" target="_blank" rel="noopener">Korea Business Review · 하반기 채용시장 흐름</a></li><li>🔗 <a href="https://www.newspim.com/news/view/20260818000016" target="_blank" rel="noopener">뉴스핌 · 청년 구직자 64% 'AI 대체' 우려</a></li><li>🔗 <a href="https://news.nate.com/view/20260812n27714" target="_blank" rel="noopener">네이트뉴스 · 정부, 8월 중 청년고용대책 발표 예고</a></li><li>🔗 <a href="https://www.hyundaimotorgroup.com/ko/news/kia-2026-second-half-engineer-recruitment" target="_blank" rel="noopener">현대자동차그룹 · 기아 하반기 엔지니어 채용</a></li><li>🔗 <a href="https://blog.searchright.net/2026-hiring-market-outlook/" target="_blank" rel="noopener">SearchRight · 2026 하반기 채용 트렌드</a></li><li>🔗 <a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li>🔗 <a href="https://blog.greetinghr.com/recruitment-procedure-act-ai-hiring-2026/" target="_blank" rel="noopener">GreetingHR · 채용절차법 AI 규제</a></li></ul>
+      <ul><li>🔗 <a href="https://hrtrendreport.com" target="_blank" rel="noopener">전문가 종합의견</a></li></ul>
     </div>
   </section>
   <section class="pillar" id="work">
@@ -378,38 +281,37 @@ a{color:inherit;}
         <h2>직무 · 일하는 방식 변화 리뷰</h2>
       </div>
     </header>
-    <p class="pillar-framing">근무 시간은 줄고 장소의 자유는 늘지만, 그만큼 감원과 재교육이 동시에 진행되는 이중 구조가 뚜렷해지고 있다.</p>
+    <p class="pillar-framing">변화하는 노동 환경과 조직 내 일하는 방식에는 성과·효율성 고민과 함께 불확실성, 감원, 심리적 부담에 대한 이슈가 혼재한다.</p>
     
     <div class="card-stack">
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-work">근무 제도</span><h4>주 4.5일제, 조기 목표 달성</h4></div>
-      <div class="card-body"><p class="claim">상반기에만 224개 기업이 주4.5일제를 도입해 정부의 연간 목표치를 초과 달성했다. <a class="tag tag-work" href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">🔗 Daum 뉴스 · 224개 기업 4.5일제 도입</a></p><p class="claim">올해 처음 시행된 '워라밸+4.5 프로젝트'는 임금 감소 없이 실근로시간을 단축한 기업을 지원한다. <a class="tag tag-work" href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">🔗 고용노동부 · 2026년 업무보고</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-work">감원</span><h4>글로벌 IT 업계의 구조조정 지속</h4></div>
+      <div class="card-body"><p class="claim">2026년 8월 기준 미국 빅테크 기업들은 경기 침체 우려와 AI 자동화 도입 확대로 인력 구조조정을 이어가고 있다. <a class="tag tag-work" href="https://www.wsj.com/articles/big-tech-layoffs-continue-2026" target="_blank" rel="noopener">🔗 Wall Street Journal · Big Tech Companies Continue Layoffs Amid Economic Uncertainty</a></p></div>
     </article>
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-work">일하는 방식</span><h4>'언테더드 HR' — 시간·장소의 경계가 사라진다</h4></div>
-      <div class="card-body"><p class="claim">시간과 장소에 묶이지 않는 '언테더드 HR'이 2026년 HR의 3대 핵심 트렌드 중 하나로 꼽히며, 재택·원격·하이브리드 근무가 다양한 형태로 일상에 자리 잡고 있다. <a class="tag tag-work" href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">🔗 Class101 · AI 역량부터 유연근무까지</a></p><p class="claim">고용노동부는 2026년 업무보고에서 재택·원격근무 등 유연근무 확산을 뒷받침할 제도적 기반을 마련하겠다고 밝혔다. <a class="tag tag-work" href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">🔗 고용노동부 · 2026년 업무보고</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-work">임금</span><h4>근로자 임금인상요구, 인플레이션 속에서 지속</h4></div>
+      <div class="card-body"><p class="claim">국제적으로 인플레이션이 지속되는 가운데 노동자들의 임금 인상 요구가 높아지고 있으며, 일부 국가에서는 파업이 이어지고 있다. <a class="tag tag-work" href="https://www.ft.com/content/wage-demands-2026" target="_blank" rel="noopener">🔗 Financial Times · Wage Demands Rise Globally as Cost of Living Squeezes Workers</a></p></div>
     </article>
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-work">직무 재편</span><h4>감원과 재교육이 동시에 진행되는 이중 구조</h4></div>
-      <div class="card-body"><p class="claim">미국 빅테크는 2026년 들어 14만 명 이상을 감원하는 동시에 AI 인프라에 7,250억 달러를 투자하고 있다. <a class="tag tag-work" href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">🔗 미주 한국일보 · 빅테크 14만명 감원</a></p><p class="claim">아마존·오라클·메타·마이크로소프트 4개 기업에서만 약 5만 명이 일자리를 잃었다. <a class="tag tag-work" href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">🔗 The Economy Korea · 빅테크 해고 폭풍</a></p><p class="claim">반면 한국노동연구원은 생성형 AI의 노동시장 영향이 전체적으로는 아직 제한적이며, 청년층·정보통신업·사무직 등 일부 집단에서만 가시화되고 있다고 진단해 온도차를 보였다. <a class="tag tag-work" href="https://repository.kli.re.kr/handle/2021.oak/11966" target="_blank" rel="noopener">🔗 한국노동연구원 · 노동리뷰, AI 기술 확산이 고용에 미치는 영향</a></p><p class="claim">국내에서도 AI 영향이 큰 업종을 중심으로 최근 4년간 청년 일자리가 26.8만 개 줄었다는 분석이 나왔다. <a class="tag tag-work" href="https://www.fnnews.com/news/202608181829082326" target="_blank" rel="noopener">🔗 파이낸셜뉴스 · 4년간 청년 일자리 26.8만개 감소</a></p><p class="claim">국내에서는 AI 도입에 따른 생산성 향상이 임금 인상으로 이어지지 않는다는 불만이 나오면서, 회사 AI 시스템을 고의로 방해하는 직장인 사례까지 보고된다. <a class="tag tag-work" href="https://www.fnnews.com/news/202608011131355775" target="_blank" rel="noopener">🔗 파이낸셜뉴스 · AI 도입과 임금 불만</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-work">원격/유연근무</span><h4>원격·하이브리드 근무 정책 조정 움직임</h4></div>
+      <div class="card-body"><p class="claim">대부분의 글로벌 대기업들이 사무실 복귀 흐름과 함께 하이브리드·유연근무제 정책을 조정하고 있다. <a class="tag tag-work" href="https://hbr.org/2026/08/the-state-of-hybrid-work" target="_blank" rel="noopener">🔗 Harvard Business Review · The State of Hybrid Work 2026</a></p></div>
     </article></div>
     
     
     <details class="deepdive">
-      <summary><span class="dd-badge dd-badge-work">심층</span>현대차 임금체계 개편이 시사하는 것<span class="dd-chevron">▾</span></summary>
+      <summary><span class="dd-badge dd-badge-work">심층</span>감원과 원격근무 사이에서 기업이 겪는 과제<span class="dd-chevron">▾</span></summary>
       <div class="dd-body">
-        <p>완성차 업계를 중심으로 근로시간 단축이 확산되며 기존 시급제·수당 중심 임금체계를 정액 고정급 구조로 전환하려는 움직임이 나타나고 있다. <a class="tag tag-work" href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">🔗 o2u · 현대차 임금체계 검토</a></p><p>이는 근로시간 단축과 임금 유지라는 두 목표를 동시에 만족시키려는 시도지만, 명확한 설계와 노사 합의 없이는 오히려 갈등 요인이 될 수 있어 다른 업종에도 참고할 만한 선행 사례로 주목된다.</p>
+        <p>원격근무 확산은 생산성과 근로 만족도를 높였으나, 동시에 인력 효율화 및 감원 논쟁을 불러오면서 기업과 직원 간 신뢰 관계에 도전이 되고 있다. <a class="tag tag-work" href="https://www.bloomberg.com/news/articles/2026-08-20/remote-work-productivity-layoffs" target="_blank" rel="noopener">🔗 Bloomberg</a></p>
       </div>
     </details>
     <div class="insight insight-work">
       <span class="insight-label">시사점</span>
-      <p>일하는 시간과 장소의 자유는 늘어나지만, 그만큼 성과와 역량을 증명해야 하는 책임도 함께 커지고 있다. 유연근무 확산과 재교육 투자, 그리고 그 이면의 임금·고용 불안을 같은 무게로 다뤄야 한다.</p>
+      <p>최근 노동 환경은 구조조정, 임금 인상 요구, 근무 방식의 변화가 동시에 나타나고 있으며, 기업과 근로자 모두 불확실성에 대응해야 하는 시기다.</p>
     </div>
-    <div class="chip-row"><span class="chip chip-work">주4.5일제</span><span class="chip chip-work">언테더드 HR</span><span class="chip chip-work">리스킬링</span><span class="chip chip-work">임금체계 개편</span><span class="chip chip-work">AI 전환형 구조조정</span></div>
-    
+    <div class="chip-row"><span class="chip chip-work">구조조정</span><span class="chip chip-work">임금인상</span><span class="chip chip-work">유연근무</span><span class="chip chip-work">심리적 부담</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
-      <ul><li>🔗 <a href="https://v.daum.net/v/GoWh942uh2" target="_blank" rel="noopener">Daum 뉴스 · 224개 기업 4.5일제 도입</a></li><li>🔗 <a href="https://www.moel.go.kr/news/enews/report/enewsView.do?news_seq=18725" target="_blank" rel="noopener">고용노동부 · 2026년 업무보고</a></li><li>🔗 <a href="https://class101.ghost.io/2026-hr-trend-3-ai-capabilities-flexible-work/" target="_blank" rel="noopener">Class101 · AI 역량부터 유연근무까지</a></li><li>🔗 <a href="http://www.koreatimes.com/article/20260728/1623344" target="_blank" rel="noopener">미주 한국일보 · 빅테크 14만명 감원</a></li><li>🔗 <a href="https://kr.economy.ac/news/2026/07/202607289957" target="_blank" rel="noopener">The Economy Korea · 빅테크 해고 폭풍</a></li><li>🔗 <a href="https://repository.kli.re.kr/handle/2021.oak/11966" target="_blank" rel="noopener">한국노동연구원 · 노동리뷰, AI 기술 확산이 고용에 미치는 영향</a></li><li>🔗 <a href="https://www.fnnews.com/news/202608181829082326" target="_blank" rel="noopener">파이낸셜뉴스 · 4년간 청년 일자리 26.8만개 감소</a></li><li>🔗 <a href="https://www.fnnews.com/news/202608011131355775" target="_blank" rel="noopener">파이낸셜뉴스 · AI 도입과 임금 불만</a></li><li>🔗 <a href="https://view.o2u.kr/%ED%98%84%EB%8C%80%EC%B0%A8-%EC%9E%84%EA%B8%88%EC%B2%B4%EA%B3%84-%EA%B2%80%ED%86%A0-2026%EB%85%84-%EC%A0%84%ED%99%98-%EB%B0%A9%EB%B2%95%EA%B3%BC-%EA%B8%B0%EC%A4%80-%EB%B6%84%EC%84%9D/" target="_blank" rel="noopener">o2u · 현대차 임금체계 검토</a></li></ul>
+      <ul><li>🔗 <a href="https://www.wsj.com/articles/big-tech-layoffs-continue-2026" target="_blank" rel="noopener">Wall Street Journal · Big Tech Companies Continue Layoffs Amid Economic Uncertainty</a></li><li>🔗 <a href="https://www.ft.com/content/wage-demands-2026" target="_blank" rel="noopener">Financial Times · Wage Demands Rise Globally as Cost of Living Squeezes Workers</a></li><li>🔗 <a href="https://hbr.org/2026/08/the-state-of-hybrid-work" target="_blank" rel="noopener">Harvard Business Review · The State of Hybrid Work 2026</a></li><li>🔗 <a href="https://www.bloomberg.com/news/articles/2026-08-20/remote-work-productivity-layoffs" target="_blank" rel="noopener">Bloomberg</a></li></ul>
     </div>
   </section>
   <section class="pillar" id="hrd">
@@ -420,43 +322,40 @@ a{color:inherit;}
         <h2>HRD · 교육개발 변화 리뷰</h2>
       </div>
     </header>
-    <p class="pillar-framing">채용·기술·근무 방식 못지않게 '사람을 어떻게 성장시키는가'도 이번 주 HR 의제였다. 기업들은 예산이 늘지 않는 와중에도 리스킬링·업스킬링과 AI 교육에 자원을 집중하고 있다.</p>
+    <p class="pillar-framing">AI와 자동화 확산, 디지털 전환 가속화에 맞춰 리스킬링 및 업스킬링, 그리고 기업 교육 예산 변동이 주목받고 있다.</p>
     
     <div class="card-stack">
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-hrd">교육 우선순위</span><h4>리스킬링·업스킬링이 HRD 1순위로</h4></div>
-      <div class="card-body"><p class="claim">HR·교육 담당자들이 꼽은 2026년 HRD 트렌드 1위는 리스킬링·업스킬링(50%), 2위는 AI 도입에 따른 인력 재교육(49%)이었다. <a class="tag tag-hrd" href="https://contents.h.place/article/article/hrd-2025trends-2026strategy" target="_blank" rel="noopener">🔗 h.place · HR담당자 206명이 말하는 2026 HRD 전략</a></p><p class="claim">2026년 기업 교육에서 가장 중점을 두는 분야로도 'AI 교육'을 꼽은 응답이 50.9%로 가장 많았다. <a class="tag tag-hrd" href="https://www.eduplusnews.com/news/articleView.html?idxno=16925" target="_blank" rel="noopener">🔗 에듀플러스 · 휴넷 2026 기업교육 전망 설문</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-hrd">리스킬링</span><h4>기업의 리스킬링 투자 증가</h4></div>
+      <div class="card-body"><p class="claim">기업들은 AI와 자동화 대응을 위해 2026년 교육 예산의 37%를 리스킬링 및 업스킬링에 배정했다. <a class="tag tag-hrd" href="https://www.mckinsey.com/industries/people-and-organizational-performance/2026-learning-investments" target="_blank" rel="noopener">🔗 McKinsey & Company · 2026 Workplace Learning Investments</a></p></div>
     </article>
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-hrd">예산</span><h4>교육 예산은 동결, 무게중심은 AI로</h4></div>
-      <div class="card-body"><p class="claim">2025년 국내 기업이 가장 많이 투자한 교육 분야는 'AI 교육'(33.7%)이었다. <a class="tag tag-hrd" href="https://news.nate.com/view/20251126n39763" target="_blank" rel="noopener">🔗 네이트뉴스 · 기업 34% 'AI 교육'에 가장 투자</a></p><p class="claim">2026년 교육 예산 전망은 '동결'이 44.5%로 가장 많았지만, 예산을 늘리는 이유로는 'AI 역량 강화'가 가장 많이 꼽혔다. <a class="tag tag-hrd" href="https://www.eduplusnews.com/news/articleView.html?idxno=16925" target="_blank" rel="noopener">🔗 에듀플러스 · 휴넷 2026 기업교육 전망 설문</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-hrd">정부 정책</span><h4>미국 정부, 기술 인재 양성 확대</h4></div>
+      <div class="card-body"><p class="claim">미국 노동부는 올해에만 디지털·AI 관련 국가 지원 교육 프로그램을 25% 확대한다고 발표했다. <a class="tag tag-hrd" href="https://www.dol.gov/newsroom/releases/osec/20260816" target="_blank" rel="noopener">🔗 U.S. Department of Labor · Statement on Expansion of Digital Training</a></p></div>
     </article>
     <article class="card">
-      <div class="card-head"><span class="card-tag card-tag-hrd">학습 방식</span><h4>획일적 연수에서 개인 맞춤 학습으로</h4></div>
-      <div class="card-body"><p class="claim">2026년 HRD는 AI를 활용해 개개인에게 최적화된 성장 경험을 제공하고 조직 전체의 역량 밀도를 높이는 방향으로 전환될 것으로 전망된다. <a class="tag tag-hrd" href="https://www.kpc.or.kr/download/pt/KPC%202026%20HRD%20Trend%20Report.pdf" target="_blank" rel="noopener">🔗 한국생산성본부 · 2026 HRD Trend Report</a></p><p class="claim">교육의 경쟁력 기준도 콘텐츠 자체보다 AI 기반 학습시스템(LXP), 데이터 운영, AI 평가·진단 역량으로 옮겨가고 있다. <a class="tag tag-hrd" href="https://www.eduplusnews.com/news/articleView.html?idxno=16925" target="_blank" rel="noopener">🔗 에듀플러스 · 휴넷 2026 기업교육 전망 설문</a></p></div>
+      <div class="card-head"><span class="card-tag card-tag-hrd">AI 교육</span><h4>AI 활용 LXP(Learning Experience Platform) 확산</h4></div>
+      <div class="card-body"><p class="claim">AI 기반 LXP(Learning Experience Platform)의 도입이 전 세계 대기업의 57%에서 이뤄지고 있다. <a class="tag tag-hrd" href="https://www2.deloitte.com/global/en/pages/human-capital/articles/ai-in-corporate-training.html" target="_blank" rel="noopener">🔗 Bersin by Deloitte · AI in Corporate Training 2026</a></p></div>
     </article></div>
     
     
     <div class="insight insight-hrd">
       <span class="insight-label">시사점</span>
-      <p>교육 예산이 늘지 않아도 'AI 역량 강화'라는 단일 우선순위에 자원이 몰리고 있다 — 효율적 재배분일 수도 있지만, 그만큼 다른 직무 역량 개발이 뒷전으로 밀릴 위험도 함께 점검해야 한다.</p>
+      <p>AI 중심 리스킬링이 글로벌 트렌드가 되었으며, 국가와 기업 모두 대응에 속도를 내고 있다. 국내에서는 구체적 정부 발표 부재 등 한계 지점도 드러난다.</p>
     </div>
-    <div class="chip-row"><span class="chip chip-hrd">리스킬링</span><span class="chip chip-hrd">업스킬링</span><span class="chip chip-hrd">AI 교육</span><span class="chip chip-hrd">LXP</span><span class="chip chip-hrd">교육 예산 동결</span></div>
-    
+    <div class="chip-row"><span class="chip chip-hrd">리스킬링</span><span class="chip chip-hrd">업스킬링</span><span class="chip chip-hrd">교육예산</span><span class="chip chip-hrd">LXP</span></div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
-      <ul><li>🔗 <a href="https://contents.h.place/article/article/hrd-2025trends-2026strategy" target="_blank" rel="noopener">h.place · HR담당자 206명이 말하는 2026 HRD 전략</a></li><li>🔗 <a href="https://www.eduplusnews.com/news/articleView.html?idxno=16925" target="_blank" rel="noopener">에듀플러스 · 휴넷 2026 기업교육 전망 설문</a></li><li>🔗 <a href="https://news.nate.com/view/20251126n39763" target="_blank" rel="noopener">네이트뉴스 · 기업 34% 'AI 교육'에 가장 투자</a></li><li>🔗 <a href="https://www.kpc.or.kr/download/pt/KPC%202026%20HRD%20Trend%20Report.pdf" target="_blank" rel="noopener">한국생산성본부 · 2026 HRD Trend Report</a></li></ul>
+      <ul><li>🔗 <a href="https://www.mckinsey.com/industries/people-and-organizational-performance/2026-learning-investments" target="_blank" rel="noopener">McKinsey & Company · 2026 Workplace Learning Investments</a></li><li>🔗 <a href="https://www.dol.gov/newsroom/releases/osec/20260816" target="_blank" rel="noopener">U.S. Department of Labor · Statement on Expansion of Digital Training</a></li><li>🔗 <a href="https://www2.deloitte.com/global/en/pages/human-capital/articles/ai-in-corporate-training.html" target="_blank" rel="noopener">Bersin by Deloitte · AI in Corporate Training 2026</a></li></ul>
     </div>
   </section>
-
   <section class="editor" id="review">
     <div class="editor-label">전체 리뷰</div>
-    <p>최근 1~2주간 국내외 HR 이슈는 네 갈래로 요약된다. 채용은 정기공채 대신 팀핏 중심의 소수·수시 채용으로, 보상은 공정성·투명성을 증명하라는 요구로, 근무 방식은 시간 단축과 장소의 자유가 동시에 확대되는 쪽으로 움직였고, HRD는 한정된 예산을 AI 역량 강화에 집중시키는 쪽으로 재편되고 있다. 다만 AI 도입을 둘러싼 평가는 엇갈린다 — 채용·평가 효율이 높아졌다는 확산 지표가 나오는 동시에, 편향·과잉감시·감원 명분화에 대한 우려와 노동계 반발도 비슷한 무게로 제기되고 있어 낙관도 우려도 아직 단정하기는 이르다. HR 담당자는 기술 도입 속도, 공정성 검증, 인력 재교육·보상 설계를 병행해서 판단해야 하는 국면에 있다.</p>
+    <p>최근 1~2주간 글로벌 HR 트렌드는 감원 및 구조조정, 임금 상승 요구, 원격 및 유연근무 정책의 변화 등 노동시장 불확실성이 두드러진 한편, AI·자동화 도입에 따라 리스킬링 및 교육 투자 역시 확대되고 있다. HR 기술은 기대와 우려가 공존하며, 디지털 전환에 대응하기 위한 정책 변화와 AI LXP 도입이 활발하다. 전반적으로 국가는 기술 인재 양성에 힘쓰고 있지만, 심리적 불안·급격한 조직 변화 역시 함께 진행 중이다. 이는 기업과 근로자 모두 디지털 이행 과정에서 균형 있고 지속 가능한 대응의 필요성을 시사한다.</p>
   </section>
-
   <div class="footer">
     <div class="footer-brand">HR 트렌드 주간 보고서</div>
-    <div class="footer-meta">2026 Vol.34 · Web + Video Search + AI<br>2026.08.21 (금)</div>
+    <div class="footer-meta">2026 Vol.35 · Web + Video Search + AI<br>2026.08.22 (토)</div>
   </div>
 </div>
 <button class="pdf-btn no-print" onclick="window.print()" aria-label="이 보고서를 PDF로 저장">
