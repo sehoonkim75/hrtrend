@@ -28,6 +28,22 @@ function getWeekNumber() {
   const start = new Date(now.getFullYear(), 0, 1);
   return Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
 }
+// 발행 호수(Vol.)는 "올해 몇 번째 주"가 아니라 "지금까지 몇 번 발행했는지"를 세는
+// 값이어야 합니다. 예전엔 getWeekNumber()를 그대로 썼는데, 이 계산식은 근사치라
+// 서로 다른 날짜가 같은 주차로 뭉개지는 경우가 있어(예: 2026.08.22와 2026.08.27이
+// 둘 다 35주차로 계산됨) 연속된 두 호가 똑같이 "Vol.35"로 찍히는 문제가 있었습니다.
+// 대신 지금 배포되어 있는 index.html에서 직전 Vol 번호를 읽어 +1 합니다 —
+// 실제 발행 이력에 근거하므로 날짜 계산 방식과 무관하게 항상 정확히 증가합니다.
+function getNextVol() {
+  try {
+    const prev = fs.readFileSync(path.join(process.cwd(), "index.html"), "utf8");
+    const m = prev.match(/Vol\.(\d+)/);
+    if (m) return Number(m[1]) + 1;
+  } catch (e) {
+    // 최초 실행 등으로 기존 index.html이 없으면 주차 계산으로 대체합니다.
+  }
+  return getWeekNumber();
+}
 function getKoreanDate() {
   const days = ["일", "월", "화", "수", "목", "금", "토"];
   const now = new Date(new Date().toLocaleString("en-US", { timeZone: "Asia/Seoul" }));
@@ -48,7 +64,7 @@ function getKoreanDateTime() {
   return `${y}.${m}.${d} ${hh}:${mm} KST`;
 }
 
-const VOL = getWeekNumber();
+const VOL = getNextVol();
 const DATE = getKoreanDate();
 const GENERATED_AT = getKoreanDateTime();
 const YEAR = new Date().getFullYear();
@@ -99,8 +115,8 @@ const SEARCH_TOPICS = [
     query: "AI 채용솔루션, AI 에이전트, HR테크 도입률 관련 최근 2주 이내 뉴스" },
   { key: "tech_risk", label: "HR 기술 리스크·반발", tag: null,
     query: "AI 채용 편향, 오탈락, 노동계 반발, 감원 명분화 논란 관련 최근 2주 이내 뉴스 (긍정적 도입 사례가 아니라 비판·우려·반발 보도를 찾을 것)" },
-  { key: "video", label: "HR·AI 유튜브 영상", tag: "[영상]",
-    query: "site:youtube.com 채용 트렌드 AI HR 전문가 리뷰 또는 뉴스 리포트 영상 (2026년, 유튜브)" },
+  { key: "video", label: "HR·AI 영상·미디어", tag: "[영상]",
+    query: "채용/AI/HR 트렌드를 다룬 영상·미디어 콘텐츠 폭넓게 탐색 — 유튜브 채널(전문가 리뷰, 뉴스 리포트), 방송사 뉴스 영상(연합뉴스TV, YTN, MBC, SBS, KBS 등), 네이버TV·카카오TV, 팟캐스트, 기업/기관 웨비나·컨퍼런스 발표 다시보기 등. 특정 플랫폼 하나에 국한하지 말 것" },
   { key: "research", label: "HR·AI 학술 연구·저널", tag: "[연구]",
     query: "AI hiring bias research paper OR algorithmic recruitment fairness study OR site:arxiv.org AI recruitment OR 한국노동연구원 AI 채용 연구 OR KDI AI 노동시장 연구" },
   { key: "public", label: "국내 정부·공공기관 발표", tag: "[공공]",
@@ -119,6 +135,7 @@ const SEARCH_TOPIC_SYSTEM = (topic) => `당신은 HR 리서처입니다. 아래 
 최근 1~2주 이내(오늘: ${DATE}) 보도를 우선하되, 없으면 최근 1개월 이내까지 넓혀서라도 실제로 검색된 항목만 보고하세요.
 검색은 최소 2회, 검색어를 바꿔가며 서로 다른 매체/기관에서 확인하세요 — 특정 블로그·채널 1곳에서만 긁어오지 마세요.
 ${topic.key === "labor_dispute" ? "공식 통계가 없는 주제입니다 — 언론에 보도된 개별 갈등·파업·쟁의 사례를 최대한 찾아 항목으로 나열하세요. 이는 '공식 통계'가 아니라 '보도 기준 추정 신호'이므로, 요약 문장에 그 점을 명시하세요." : ""}
+${topic.key === "video" ? "유튜브 한 플랫폼에만 매몰되지 말고 최소 3회 이상, 서로 다른 유형의 소스(예: 유튜브 채널, 방송사 뉴스 영상, 웨비나/컨퍼런스 녹화본, 팟캐스트 등)를 각각 따로 검색해보세요. 최근 1~2주 이내로 찾기 어려우면 최근 1~2개월 이내까지 넓혀도 됩니다." : ""}
 
 찾은 항목마다 실제 검색된 제목 요약, 출처명(매체명/채널명/기관명), 실제 URL, 날짜(가능하면 YYYY.MM.DD)를 다음 형식의 글머리 기호로 정확히 나열하세요. 항목이 없으면 목록을 비워두고 "검색 결과 없음"이라고만 쓰세요 — 없는 항목을 지어내지 마세요.
 
@@ -153,8 +170,32 @@ async function collectSearchData() {
         max_output_tokens: 1200,
       }), `검색(${topic.label})`
     );
-    const text = (response.output_text || "").trim();
-    const n = countBullets(text);
+    let text = (response.output_text || "").trim();
+    let n = countBullets(text);
+
+    // 영상·미디어 주제는 유독 0건으로 나오는 경우가 잦았습니다(2주 연속 0건 확인).
+    // 첫 시도가 비었으면, 검색어를 더 넓혀 한 번 더 시도합니다.
+    if (topic.key === "video" && n === 0) {
+      console.log(`   🔎 ${topic.label}: 1차 0건 — 더 넓은 질의로 재시도...`);
+      await sleep(SEARCH_CALL_STAGGER_MS);
+      const retryQuery = "HR·채용·AI 관련 영상 또는 미디어 콘텐츠를 웹 전반에서 최대한 폭넓게 검색 — 뉴스 영상 리포트, 전문가 인터뷰, 유튜브 채널, 웨비나·컨퍼런스 발표 녹화본, 팟캐스트 등 형식 제한 없이. 최근 1~2개월 이내";
+      const retryResponse = await withRetry(() =>
+        client.responses.create({
+          model: MODEL,
+          instructions: SEARCH_TOPIC_SYSTEM({ ...topic, query: retryQuery }),
+          input: `"${topic.label}" 주제로 훨씬 더 폭넓게 다시 검색해 실제 영상/미디어 항목을 찾아주세요. ${retryQuery}`,
+          tools: [{ type: WEB_SEARCH_TOOL_TYPE }],
+          max_output_tokens: 1200,
+        }), `검색 재시도(${topic.label})`
+      );
+      const retryText = (retryResponse.output_text || "").trim();
+      const retryN = countBullets(retryText);
+      if (retryN > 0) {
+        text = retryText;
+        n = retryN;
+      }
+    }
+
     byTopic[topic.key] = n;
     totalItems += n;
     videoCount += countTag(text, "[영상]");
@@ -269,7 +310,7 @@ const PART_B_SYSTEM = `${COMMON_RULES}
 규칙:
 - timeline은 반드시 검색 데이터에서 날짜가 확인되는(가능한 최근 2주 이내) 항목 3~5개로 구성하세요. 날짜를 알 수 없는 항목은 timeline에 넣지 마세요.
 - groups는 정확히 3개("도입 · 자동화", "리스크 · 반발", "규제 · 거버넌스")이며, "리스크 · 반발" 그룹은 반드시 채워야 합니다(편향, 오탈락, 노동계 반발, 청년 고용 위축, 감원 명분화 비판 등).
-- claims 전체에서 최소 1개 이상은 유튜브 영상(srcUrl에 youtube.com 또는 youtu.be 포함) 출처를 사용하세요.
+- 검색 데이터에 [영상] 표시가 있는 항목이 있다면, claims 중 최소 1개는 그 영상·미디어 자료를 srcUrl로 사용하세요. 검색 데이터에 [영상] 항목이 전혀 없다면 이 조건은 건너뛰세요 — 없는 영상 출처를 지어내지 마세요.
 - 긍정/우려 비중이 한쪽으로 치우치지 않게 하세요.
 - chart.bars는 3~4개, 없으면 빈 배열로.`;
 
