@@ -153,6 +153,25 @@ function countTag(text, tag) {
   const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return ((text || "").match(new RegExp(escaped, "g")) || []).length;
 }
+// 검색 프롬프트에서 "각 항목 맨 앞에 [태그]를 붙이라"고 지시해도, 모델이 실제로는
+// 항목을 찾아놓고 태그 접두사만 빠뜨리는 경우가 실제로 관찰됐습니다(예: 영상 항목을
+// 2건 찾았는데 [영상] 태그가 하나도 안 붙어 대시보드엔 0건으로 집계됨). 태그가 있어야
+// 할 주제인데 실제 텍스트엔 태그가 하나도 없으면, 각 글머리 기호 줄 맨 앞에 코드로
+// 직접 태그를 끼워 넣어 보정합니다 — 집계 수치와 이후 JSON 생성 단계가 참고하는
+// 원문 모두 태그 누락에 영향받지 않도록 함.
+function ensureTagged(text, tag) {
+  if (!tag || !text) return text;
+  if (countTag(text, tag) > 0) return text; // 이미 모델이 태그를 붙였으면 그대로 둠
+  const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const tagRe = new RegExp(escaped);
+  return text.split("\n").map((line) => {
+    const trimmed = line.trim();
+    if (/^-\s/.test(trimmed) && !/검색\s*결과\s*없음/.test(trimmed) && !tagRe.test(line)) {
+      return line.replace(/^(\s*-\s*)/, `$1${tag} `);
+    }
+    return line;
+  }).join("\n");
+}
 
 async function collectSearchData() {
   console.log(`   web_search 시작 — 주제 ${SEARCH_TOPICS.length}개, 주제마다 별도 검색 호출...`);
@@ -196,6 +215,7 @@ async function collectSearchData() {
       }
     }
 
+    text = ensureTagged(text, topic.tag);
     byTopic[topic.key] = n;
     totalItems += n;
     videoCount += countTag(text, "[영상]");
