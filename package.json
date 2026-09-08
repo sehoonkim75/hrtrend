@@ -1,0 +1,8 @@
+{
+  "name": "hrtrend",
+  "private": true,
+  "description": "Weekly HR trend report generator (scripts/generate-report.js)",
+  "dependencies": {
+    "openai": "7.10.0"
+  }
+}

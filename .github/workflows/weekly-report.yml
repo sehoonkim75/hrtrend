@@ -21,10 +21,18 @@ jobs:
       - name: setup-node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          # openai 패키지를 npm ci로 버전 고정하면서 확인해보니, 고정한 버전의
+          # package.json이 "engines": { "node": ">=22.0.0" }를 요구합니다.
+          # 기존에는 20으로 고정돼 있었는데(엄격히 강제되진 않지만) 실제로
+          # 검증되지 않은 조합이라 맞춰서 올립니다.
+          node-version: '22'
+          cache: 'npm'
 
       - name: install
-        run: npm install openai
+        # package-lock.json에 고정된 정확한 버전만 설치합니다(npm install처럼
+        # "그때그때 latest"를 받아오지 않음) — package.json/lock과 어긋나면
+        # 실패하므로, 의존성이 조용히 바뀌는 공급망 리스크를 줄입니다.
+        run: npm ci
 
       - name: generate
         env:
