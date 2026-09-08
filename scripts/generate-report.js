@@ -420,7 +420,34 @@ let searchDataGlobal = "";
 // 렌더러 (JSON → HTML) — 화이트모드, 문구 단위 출처 태깅(기사·영상),
 // 기술 섹션 서브그룹+타임라인, PDF 저장, '다음 호 예고' 없음
 // ─────────────────────────────────────────────────────────
-function esc(s) { return s == null ? "" : String(s); }
+// 이 함수는 이름과 달리 실제로는 이스케이프를 하지 않고 있었습니다(String() 변환만
+// 함) — 매주 실시간 웹 검색 결과를 요약한 텍스트가 이 함수를 거쳐 그대로
+// index.html에 박히고, 그 페이지가 GitHub Pages로 공개 서빙되는 구조라 검색된
+// 웹페이지에 우연히 섞인 HTML 태그나 악의적인 프롬프트 인젝션 문구가 그대로
+// 실행 가능한 스크립트로 저장될 수 있는 저장형 XSS 취약점이었습니다.
+// 실제로 특수문자를 HTML 엔터티로 치환하도록 수정합니다.
+function esc(s) {
+  return s == null ? "" : String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+// href 속성에 들어가는 URL은 엔터티 이스케이프만으로는 충분하지 않습니다 —
+// javascript: 같은 스킴은 따옴표 이스케이프와 무관하게 클릭 시 그대로 실행됩니다.
+// http/https 스킴만 통과시키고, 그 외(스킴이 없거나 파싱 자체가 안 되는 값 포함)는
+// 안전한 자리표시자로 대체합니다.
+function escUrl(u) {
+  const s = u == null ? "" : String(u).trim();
+  try {
+    const parsed = new URL(s);
+    if (parsed.protocol === "http:" || parsed.protocol === "https:") return esc(s);
+  } catch (e) {
+    // URL 파싱 실패 — 상대경로 등 스킴이 없는 값도 여기로 떨어짐, 아래 기본값 사용
+  }
+  return "#";
+}
 // video 검색 주제를 유튜브 하나에서 방송사 뉴스 영상·네이버TV/카카오TV·팟캐스트·
 // 웨비나까지 넓혔으므로, 아이콘 판별도 유튜브 URL 패턴 하나에만 의존하지 않게 함.
 function isVideo(url) { return /youtube\.com|youtu\.be|tv\.naver\.com|tv\.kakao\.com|\/video\//i.test(url || ""); }
@@ -433,7 +460,7 @@ function src(item) {
 function cite(s, color) {
   if (!s) return "";
   const icon = isVideo(s.url) ? "🎥" : "🔗";
-  return ` <a class="tag tag-${color}" href="${esc(s.url)}" target="_blank" rel="noopener">${icon} ${esc(s.name)}</a>`;
+  return ` <a class="tag tag-${color}" href="${escUrl(s.url)}" target="_blank" rel="noopener">${icon} ${esc(s.name)}</a>`;
 }
 
 function renderClaims(claims, color) {
@@ -538,7 +565,7 @@ function renderPillar(p) {
     <div class="chip-row">${(p.keywords || []).map((k) => `<span class="chip chip-${p.color}">${esc(k)}</span>`).join("")}</div>
     <div class="cite-index">
       <div class="cite-index-label">이 섹션에서 인용한 자료</div>
-      <ul>${dedupeSources(p).map((s) => `<li>${isVideo(s.url) ? "🎥" : "🔗"} <a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
+      <ul>${dedupeSources(p).map((s) => `<li>${isVideo(s.url) ? "🎥" : "🔗"} <a href="${escUrl(s.url)}" target="_blank" rel="noopener">${esc(s.name)}</a></li>`).join("")}</ul>
     </div>
   </details>`;
 }
