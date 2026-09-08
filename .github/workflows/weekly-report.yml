@@ -14,12 +14,16 @@ jobs:
 
     steps:
       - name: checkout
-        uses: actions/checkout@v4
+        # v4 태그가 아니라 커밋 SHA로 고정합니다 — 태그는 다시 지정(재태깅)될 수
+        # 있어, 저장소가 침해당하면 같은 v4 태그가 조용히 악성 코드를 가리키게
+        # 바뀔 수 있습니다. 이 워크플로우는 OPENAI_API_KEY와 contents:write
+        # 권한의 GITHUB_TOKEN을 다루므로 이 리스크를 줄여둘 가치가 있습니다.
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: setup-node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           # openai 패키지를 npm ci로 버전 고정하면서 확인해보니, 고정한 버전의
           # package.json이 "engines": { "node": ">=22.0.0" }를 요구합니다.
